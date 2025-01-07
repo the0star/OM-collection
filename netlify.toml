@@ -1,8 +1,15 @@
 [functions]
-  external_node_modules = ["express"]
+  external_node_modules = ["express", "pug"]
   node_bundler = "esbuild"
+  included_files = ["views/**", "public/**", "locales/**"]
+[[redirects]]
+  from = "/images/*"
+  to = "/public/images/:splat"
+  status = 200
 [[redirects]]
   force = true
-  from = "/api/*"
-  status = 200
+  from = "/*"
   to = "/.netlify/functions/api/:splat"
+  status = 200
+[dev]
+  publish = "public"
