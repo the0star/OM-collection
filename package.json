@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node app.js",
-    "devstart": "nodemon app.js"
+    "start": "node ./bin/www",
+    "devstart": "nodemon ./bin/www"
   },
   "dependencies": {
     "@sentry/node": "^6.8.0",
@@ -19,7 +19,7 @@
     "dayjs": "^1.10.5",
     "debug": "~2.6.9",
     "dotenv": "^8.2.0",
-    "express": "^4.16.1",
+    "express": "~4.16.1",
     "express-session": "^1.17.1",
     "express-validator": "^6.6.1",
     "form-data": "^4.0.0",
@@ -34,7 +34,6 @@
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "pug": "^3.0.2",
-    "serverless-http": "^3.2.0",
     "sharp": "^0.31.3"
   },
   "devDependencies": {

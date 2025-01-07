@@ -115,6 +115,3 @@ temp/
 # temp folder for uploading images
 uploads/
 .vscode/
-
-# Local Netlify folder
-.netlify
