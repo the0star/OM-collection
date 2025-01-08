@@ -21,7 +21,11 @@ router.get("/closing_notice", miscController.closingNotice);
 // Cards lists
 router.get("/cards/:character", cardController.getCharacterCardPage);
 router.get("/cards", cardController.getCardsListPage);
-router.get("/hiddenCards", loginController.hasAccess("Admin"), cardController.getHiddenCardsListPage);
+router.get(
+  "/hiddenCards",
+  loginController.hasAccess("Admin"),
+  cardController.getHiddenCardsListPage
+);
 router.get("/card_pages", cardController.getCardDirectory);
 
 // Events
@@ -33,22 +37,42 @@ router.get("/login", loginController.getLoginPage);
 router.post("/login", loginController.login);
 router.get("/logout", loginController.isLoggedIn(), loginController.logout);
 router.get("/signup", loginController.getSignupPage);
-router.post("/signup", loginController.validateSignupInput, loginController.signup);
+router.post(
+  "/signup",
+  loginController.validateSignupInput,
+  loginController.signup
+);
 router.post("/signup/checkUsername", loginController.signupCheckUsername);
 
 // User's personal collection
-router.get("/collection/getOwnedCards", loginController.isLoggedIn(), userController.getOwnedUniqueNames);
-router.post("/collection/submitCollectionChanges", loginController.isLoggedIn(), userController.submitCollectionChanges);
+router.get(
+  "/collection/getOwnedCards",
+  loginController.isLoggedIn(),
+  userController.getOwnedUniqueNames
+);
+router.post(
+  "/collection/submitCollectionChanges",
+  loginController.isLoggedIn(),
+  userController.submitCollectionChanges
+);
 router.get("/:username/collection", cardController.getOwnedCardsPage);
 router.get("/:username/favourites", cardController.getFavouriteCardsPage);
 router.get("/:username/profile", cardController.getProfilePage);
 
 // User Management
-router.get("/userList", loginController.hasAccess("Admin"), userController.getUserListPage);
-router.post("/updateSupport", loginController.hasAccess("Admin"), userController.updateSupport);
+router.get(
+  "/userList",
+  loginController.hasAccess("Admin"),
+  userController.getUserListPage
+);
+router.post(
+  "/updateSupport",
+  loginController.hasAccess("Admin"),
+  userController.updateSupport
+);
 
 // Misc.
-router.get("/getCards", cardController.getCards);   // TODO: refactor
+router.get("/getCards", cardController.getCards); // TODO: refactor
 router.get("/getCards2", cardController.getCards2); // TODO: refactor
 // router.get("/animations", cardController.getAnimationList);
 router.get("/getTreeData", cardController.getTreeData);
@@ -61,7 +85,11 @@ router.get("/tree_tracker", (req, res) => {
   res.redirect(301, "/tree-tracker");
 });
 
-router.post("/update_tree", loginController.isLoggedIn(), userController.updateUserTree);
+router.post(
+  "/update_tree",
+  loginController.isLoggedIn(),
+  userController.updateUserTree
+);
 
 router.get("/getTeam", miscController.getTeam);
 router.get("/team-builder", miscController.getTeamBuilder);
@@ -70,6 +98,5 @@ router.get("/stories", storyController.getStories);
 router.get("/story/main/:name", storyController.getStory);
 
 router.get("/images/cards/L/:name", miscController.getCardImage);
-
 
 module.exports = router;
