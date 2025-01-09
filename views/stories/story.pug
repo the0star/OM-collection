@@ -22,7 +22,7 @@ block content
                       img.mx-5(src="/images/faces/" + i.data.displayName.en + ".png" style="width:2rem;height:auto;float:left;" alt=(i.action == 'dialogue' ? i.data.displayName[t("lang")] : ''))
                     else
                       div.mx-5(style="width:2rem;") ???
-                    p.m-0!= i.data.text[t("lang")].replace("MC_NAME", user ? user.displayName : "???")
+                    p.m-0!= i.data.text[t("lang")].replace("MC_NAME", user ? user.displayName : "YourName")
               else if i.action == 'sel_label'
                 hr
                 h5!= story.content.find(x => x.data.choice == i.data.choice).data.text[t("lang")]

@@ -1,28 +1,42 @@
+require("dotenv").config();
+
 const Sentry = require("@sentry/node");
 const createError = require("http-errors");
-
-// TODO: fix structure
-const Codes = require("../models/verificationCodes.js");
-const Users = require("../models/users.js");
 
 const bcrypt = require("bcrypt");
 const cryptoRandomString = require("crypto-random-string");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const { body, validationResult } = require("express-validator");
-const async = require("async");
-
-require("dotenv").config();
 
 const formData = require("form-data");
 const Mailgun = require("mailgun.js");
 const mailgun = new Mailgun(formData);
 const mg = mailgun.client({ username: "api", key: process.env.API_KEY });
 
+// TODO: fix structure
+const Codes = require("../models/verificationCodes.js");
+const Users = require("../models/users.js");
 const userService = require("../services/userService");
 
-// Login and signup
-exports.getLoginPage = function (req, res, next) {
+// Helper
+function getUserSessionData(user) {
+  return {
+    name: user.info.name,
+    email: user.info.email,
+    supportStatus: user.info.supportStatus,
+    id: user.id,
+    // TODO: fix structure. Choose one or the other: user.info.type === "Admin" or user.isAdmin
+    type: user.info.type,
+    isAdmin: user.info.type === "Admin",
+    isSupporter: user.info.supportStatus.some(
+      (badge) => badge.name === "adfree"
+    ),
+  };
+}
+
+// Render pages
+exports.getLoginPage = function (req, res) {
   return res.render("login", {
     title: req.i18n.t("common.login"),
     message: req.flash("message"),
@@ -30,23 +44,34 @@ exports.getLoginPage = function (req, res, next) {
   });
 };
 
+exports.getSignupPage = function (req, res) {
+  res.render("signup", { title: req.i18n.t("common.signup"), user: req.user });
+};
+
+/** */
+
 exports.login = passport.authenticate("local", {
   successRedirect: "/",
   failureRedirect: "/login",
   failureFlash: true,
 });
 
-exports.logout = function (req, res) {
-  req.logout();
-  req.session.destroy(function (err) {
-    req.user = null;
-    res.clearCookie("connect.sid");
-    res.redirect("/");
+exports.logout = function (req, res, next) {
+  req.logout(function (err) {
+    if (err) {
+      console.error("req.logout Error: ", err);
+      return next(err);
+    }
+    req.session.destroy(function (err) {
+      if (err) {
+        console.error("req.session.destroy Error: ", err);
+        return next(err);
+      }
+      req.user = null;
+      res.clearCookie("connect.sid");
+      res.redirect("/");
+    });
   });
-};
-
-exports.getSignupPage = function (req, res, next) {
-  res.render("signup", { title: req.i18n.t("common.signup"), user: req.user });
 };
 
 exports.validateSignupInput = async (req, res, next) => {
@@ -150,13 +175,11 @@ exports.signupCheckUsername = async function (req, res) {
     var exists = await userService.getUser(req.body.username);
   } catch (e) {
     console.error(e);
-    res.send("error");
-    return;
+    return res.send("error");
   }
 
   if (!exists) {
-    res.send(false);
-    return;
+    return res.send(false);
   }
   res.send(true);
 };
@@ -182,10 +205,7 @@ exports.hasAccess = function (role) {
 
 exports.isSameUser = function () {
   return function (req, res, next) {
-    if (
-      req.user &&
-      (req.user.name == req.params.name || exports.hasAccess("Admin"))
-    ) {
+    if (req.user && (req.user.name == req.params.name || hasAccess("Admin"))) {
       return next();
     }
     res.redirect("/login");
@@ -310,7 +330,7 @@ exports.changePassword = function (req, res, next) {
       return res.json({ err: true, message: err.message });
     }
     if (!user) {
-      var err = new Error("No such user");
+      var err = new Error("User not found");
       return res.json({ err: true, message: err.message });
     }
     bcrypt.compare(
@@ -406,54 +426,34 @@ exports.restorePassword = function (req, res, next) {
 
 // Authentication
 passport.use(
-  new LocalStrategy({ passReqToCallback: true }, function (
+  new LocalStrategy({ passReqToCallback: true }, async function (
     req,
     username,
     password,
     next
   ) {
-    Users.findOne(
-      { "info.name": { $regex: new RegExp("^" + username + "$", "i") } },
-      function (err, user) {
-        if (err) {
-          return next(err);
-        }
-        if (!user) {
-          return next(null, false, req.flash("message", "No such user"));
-        }
-        bcrypt.compare(password, user.info.password, function (err, result) {
-          if (err) {
-            return next(err);
-          }
-          if (!result) {
-            return next(null, false, req.flash("message", "Wrong password"));
-          } else {
-            var userInfo = user.info;
-            userInfo.id = user.id;
-            return next(null, userInfo);
-          }
-        });
-      }
-    );
+    const user = await Users.findOne({
+      "info.name": { $regex: new RegExp("^" + username + "$", "i") },
+    });
+    if (!user) return next(null, false, req.flash("message", "User not found"));
+
+    const validPassword = await bcrypt.compare(password, user.info.password);
+    if (validPassword === false)
+      return next(null, false, req.flash("message", "Wrong password"));
+
+    const userInfo = getUserSessionData(user);
+    return next(null, userInfo);
   })
 );
 
 passport.serializeUser(function (user, next) {
-  next(null, user.id);
+  process.nextTick(function () {
+    next(null, user);
+  });
 });
 
-passport.deserializeUser(function (id, next) {
-  Users.findById(id, function (err, user) {
-    let userInfo = user.info;
-    userInfo.id = user._id;
-    if (user.info.type === "Admin") {
-      userInfo.isAdmin = true;
-    }
-    if (userInfo.supportStatus && userInfo.supportStatus.length > 0) {
-      userInfo.isSupporter = userInfo.supportStatus.some(
-        (badge) => badge.name === "adfree"
-      );
-    }
-    return next(err, userInfo);
+passport.deserializeUser(function (user, next) {
+  process.nextTick(function () {
+    return next(null, user);
   });
 });

@@ -11,8 +11,8 @@ const logger = require("morgan");
 const helmet = require("helmet");
 const passport = require("passport");
 const compression = require("compression");
-// TODO remove
 const flash = require("connect-flash");
+const bodyParser = require("body-parser");
 
 const utils = require("./services/utils");
 
@@ -32,10 +32,10 @@ const app = express();
 app.set("views", __dirname + "/views");
 app.set("view engine", "pug");
 
+mongoose.set("strictQuery", true);
 mongoose.connect(process.env.URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useFindAndModify: false,
 });
 mongoose.Promise = global.Promise;
 mongoose.connection.on(
@@ -43,9 +43,19 @@ mongoose.connection.on(
   console.error.bind(console, "MongoDB connection error:")
 );
 
-app.use(Sentry.Handlers.requestHandler());
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
-app.use(express.json({ limit: "50mb" }));
+Sentry.setupExpressErrorHandler(app);
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(compression());
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(
+  logger("dev", { skip: (req, res) => req.app.get("env") !== "production" })
+);
+
+app.use(express.static(__dirname + "/public"));
+
 app.use(
   session({
     store: new MongoStore({ url: process.env.URI }),
@@ -54,16 +64,9 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 90,
-      sameSite: "lax",
+      sameSite: "strict",
     },
   })
-);
-
-app.use(cookieParser());
-app.use(compression());
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(
-  logger("dev", { skip: (req, res) => req.app.get("env") !== "production" })
 );
 
 app.use(passport.initialize());
@@ -83,12 +86,10 @@ app.use("/user", userRouter);
 app.use("/event", eventsRouter);
 app.use("/suggestion", suggestionRouter);
 app.use("/ask", askKarasuRouter);
-app.use(express.static(__dirname + "/public"));
+
 app.use((req, res, next) =>
   next(createError(404, { title: "Page not found" }))
 );
-
-app.use(Sentry.Handlers.errorHandler());
 
 app.use(function (err, req, res, next) {
   let ignoredErrors = [401, 404];

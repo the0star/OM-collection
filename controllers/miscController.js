@@ -1,7 +1,6 @@
 const https = require("https");
 const createError = require("http-errors");
 const Sentry = require("@sentry/node");
-const sharp = require("sharp");
 
 const cacheService = require("../services/cacheService");
 const cardService = require("../services/cardService");

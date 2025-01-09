@@ -21,15 +21,16 @@ exports.getDevilgram = async function (req, res) {
 
 exports.getStory = async function (req, res) {
   const story = await storyService.getStory(req.params.name);
-  if (req.user) {
-    req.user.displayName =
-      (await userService.getUser(req.user.name)).profile.name || "???";
+  let user = req.user;
+  if (user) {
+    user.displayName =
+      (await userService.getUser(user.name)).profile.name || user.name;
   }
   return res.render("stories/story", {
     title: story.name,
-    description: "",
+    description: "Obey Me Original Main Lesson Story " + story.name,
     story: story,
-    user: req.user,
+    user: user,
   });
 };
 

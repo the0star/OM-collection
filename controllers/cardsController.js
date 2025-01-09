@@ -173,8 +173,9 @@ exports.getCardDetailPage = async function (req, res, next) {
     }
 
     // TODO: remove irrelevant nodes?
-    if (req.user) {
-      req.user.tree = (await userService.getUser(req.user.name)).tree;
+    let user = req.user;
+    if (user) {
+      user.tree = (await userService.getUser(user.name)).tree;
     }
 
     return res.render("cardDetail", {
@@ -182,7 +183,7 @@ exports.getCardDetailPage = async function (req, res, next) {
       description: `View "${cardData.name}" and other Obey Me cards on Karasu-OS.com`,
       card: cardData,
       isHidden: false,
-      user: req.user,
+      user: user,
       stats: stats,
     });
   } catch (e) {
