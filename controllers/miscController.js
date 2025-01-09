@@ -273,15 +273,3 @@ exports.getTeam = async function (req, res) {
     return res.json({ err: true, message: e.message });
   }
 };
-
-exports.getCardImage = async function (req, res, next) {
-  try {
-    const img = await sharp("./public/images/cards/L/" + req.params.name)
-      .resize(820, 1106)
-      .composite([{ input: "./public/images/watermark.png" }])
-      .toBuffer();
-    res.send(img);
-  } catch (e) {
-    next(createError(404));
-  }
-};

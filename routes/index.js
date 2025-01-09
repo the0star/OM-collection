@@ -8,6 +8,8 @@ const eventsController = require("../controllers/eventsController");
 const loginController = require("../controllers/loginController");
 const storyController = require("../controllers/storyController");
 
+const remoteImgURL = process.env.REMOTE_IMG_URL;
+
 // Static pages
 router.get("/", cardController.index);
 router.get("/policies", miscController.privacyPolicy);
@@ -97,6 +99,14 @@ router.get("/team-builder", miscController.getTeamBuilder);
 router.get("/stories", storyController.getStories);
 router.get("/story/main/:name", storyController.getStory);
 
-router.get("/images/cards/L/:name", miscController.getCardImage);
+router.use("/images", (req, res, next) => {
+  const imgPaths = ["/cards/", "/events/", "/bg/"];
+  const match = imgPaths.find((path) => req.path.startsWith(path));
+  if (match) {
+    res.redirect(301, `${remoteImgURL}/images${req.path}`);
+  } else {
+    next();
+  }
+});
 
 module.exports = router;
