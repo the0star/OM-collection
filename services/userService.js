@@ -502,18 +502,26 @@ exports.renameCardInCollections = function (oldName, newName) {
     return Promise.resolve(true);
   }
 
-  var promiseFaved = Users.updateMany(
-    { $or: [{ "cards.owned": oldName }, { "cards.faved": oldName }] },
-    { $push: { "cards.owned": newName, "cards.faved": newName } }
+  const promiseFaved = Users.updateMany(
+    { "cards.faved": oldName },
+    {
+      $push: { "cards.faved": newName },
+    }
   );
-  var promiseOwned = Users.updateMany(
+
+  const promiseOwned = Users.updateMany(
+    { "cards.owned": oldName },
+    {
+      $push: { "cards.owned": newName },
+    }
+  );
+
+  const promisePull = Users.updateMany(
     {},
     { $pull: { "cards.owned": oldName, "cards.faved": oldName } }
   );
 
-  return promiseFaved.then(() => {
-    return promiseOwned;
-  });
+  return promiseFaved.then(() => promiseOwned).then(() => promisePull);
 };
 
 exports.deleteCardInCollections = function (cardName) {
