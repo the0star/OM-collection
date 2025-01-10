@@ -35,13 +35,6 @@ block scripts
   link(rel="canonical" href="https://" + (t("lang") === "en" ? "" : t("lang") + '.') + "karasu-os.com/SurpriseGuest")
   link(rel="stylesheet" href="/stylesheets/spg.css")
   script(src="/javascripts/surpriseGuestFunctions.js")
-  script.
-    (function(h,o,t,j,a,r){h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-    h._hjSettings={hjid:2235794,hjsv:6};
-    a=o.getElementsByTagName('head')[0];
-    r=o.createElement('script');r.async=1;
-    r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-    a.appendChild(r);})(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
 
 block content
   .container
@@ -71,8 +64,8 @@ block content
         .col-3.d-none.d-lg-block
           .nav.flex-column.nav-pills.mb-2.big-nav(role='tablist' aria-orientation="vertical")
             each interaction in interactions
-              a.px-1.px-sm-2.px-lg-3(class='nav-item nav-link' id=interaction.chara+'Pill' data-toggle='pill' href='#'+interaction.chara role='tab' aria-controls=interaction.chara)
-                img.img-fluid.mx-1(src=`/images/faces/${interaction.chara}.png` style='width:30px;' alt=interaction.chara)
+              a.d-flex.align-items-center.px-1.px-sm-2.px-lg-3(class='nav-item nav-link' id=interaction.chara+'Pill' data-toggle='pill' href='#'+interaction.chara role='tab' aria-controls=interaction.chara)
+                img.img-fluid.mr-2(src=`/images/faces/${interaction.chara}.png` style='width:30px;' alt=interaction.chara)
                 | #{t(interaction.chara)}
         .col-12.d-lg-none.mb-3
           .nav.nav-pills.justify-content-center.small-nav(role='tablist')

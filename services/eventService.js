@@ -35,102 +35,6 @@ exports.getLatestEvent = async function (t) {
   return (await Events.find({ type: t }).sort({ start: -1 }).limit(1))[0];
 };
 
-/*
-exports.getCalculatorEvent = async function(eventName) {
-var event = cacheService.getCachedEvent();
-if (!event || eventName != event.name) {
-event = await getFullEventData(eventName);
-}
-
-return event;
-}
-
-exports.getLatestEvent = async function () {
-var latestEventName = await getLatestEventName();
-
-var cachedEvent = cacheService.getCachedEvent();
-if (cachedEvent && cachedEvent.name === latestEventName) {
-return cachedEvent;
-}
-
-try {
-var latestEventData = await getFullEventData(latestEventName);
-cacheService.setCachedEvent(latestEventData);
-return latestEventData;
-} catch (e) {
-// console.error(e);
-Sentry.captureException(e);
-return {};
-}
-}
-
-async function getLatestEventName() {
-var currentTime = new Date();
-try {
-var latestEvent = await Events.find({
-start: { "$lte": currentTime },
-type: { "$ne": "Nightmare" }
-}).sort({ end: -1 }).limit(1);
-if (!latestEvent[0] || !latestEvent[0].name) return;
-
-return latestEvent[0].name.en;
-} catch (e) {
-console.error(e);
-Sentry.captureException(e);
-}
-}
-
-exports.getLatestEventData = async function () {
-var latestEventName = await getLatestEventName();
-if (!latestEventName) return;
-
-var latestEventData = await getFullEventData(latestEventName);
-return latestEventData;
-}
-
-async function getFullEventData(eventName) {
-try {
-var event = await Events.aggregate([
-{ $match: { "name.en": eventName }},
-{
-$unwind: {
-"path": "$rewards",
-"preserveNullAndEmptyArrays": true
-}},
-{ $lookup: {
-from: "cards",
-localField: "rewards.card",
-foreignField: "name",
-as: "rewards.card"
-}},
-{ $unwind: { path: "$rewards.card", preserveNullAndEmptyArrays: true }},
-{ $project: {
-"rewards.card.attribute": 0,
-"rewards.card.type": 0,
-"rewards.card.rarity": 0,
-"rewards.card.characters": 0
-}},
-{
-$sort: {
-"rewards.points": -1,
-"rewards.card.number": -1
-}},
-{ $group: {
-_id: "$_id",
-temp: { "$first": "$$ROOT" },
-rewards: { "$push": "$rewards" }
-}},
-{ $replaceRoot: { "newRoot": { "$mergeObjects": ["$temp", { rewards: "$rewards" }]}}}
-]);
-
-return event?.length ? event[0] : null;
-} catch (e) {
-console.error(e);
-Sentry.captureException(e);
-}
-}
-*/
-
 exports.addEvent = async function (data, img, user) {
   try {
     let event = await Events.findOne({ "name.en": data.name.en });
@@ -172,7 +76,7 @@ exports.updateEvent = async function (originalName, data, img = null, user) {
         404,
         (properties = {
           errorMessage: `Event with name ${originalName} doesn't exist`,
-        })
+        }),
       );
     }
 
