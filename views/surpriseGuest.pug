@@ -49,7 +49,7 @@ block content
         .custom-control.custom-radio.custom-control-inline
           input.custom-control-input(type="radio" id="allActions" name="optionsSwitch")
           label.custom-control-label(for="allActions")= t("spg.allActions")
-        .custom-control.custom-checkbox.mt-2.mb-1.text-lg-center
+        .custom-control.custom-checkbox.mt-2.mb-1.text-md-center
           input.custom-control-input(type="checkbox" id="useItems")
           label.custom-control-label(for="useItems")= t("spg.use_item")
       a(class="text-center text-secondary collapser" id="settingsCollapser" data-toggle="collapse" href="#settings" role="button" aria-expanded="false" aria-controls="settings")
@@ -65,8 +65,9 @@ block content
           .nav.flex-column.nav-pills.mb-2.big-nav(role='tablist' aria-orientation="vertical")
             each interaction in interactions
               a.d-flex.align-items-center.px-1.px-sm-2.px-lg-3(class='nav-item nav-link' id=interaction.chara+'Pill' data-toggle='pill' href='#'+interaction.chara role='tab' aria-controls=interaction.chara)
-                img.img-fluid.mr-2(src=`/images/faces/${interaction.chara}.png` style='width:30px;' alt=interaction.chara)
-                | #{t(interaction.chara)}
+                div.mr-2(style="width:30px;height:30px;")
+                  img.img-fluid(src=`/images/faces/${interaction.chara}.png` alt=interaction.chara)
+                span= t(interaction.chara)
         .col-12.d-lg-none.mb-3
           .nav.nav-pills.justify-content-center.small-nav(role='tablist')
             each interaction in interactions
