@@ -14,8 +14,6 @@ const compression = require("compression");
 const flash = require("connect-flash");
 const bodyParser = require("body-parser");
 
-const utils = require("./services/utils");
-
 const indexRouter = require("./routes/index");
 const cardsRouter = require("./routes/cards");
 const userRouter = require("./routes/user");
