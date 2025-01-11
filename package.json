@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "devstart": "nodemon ./bin/www"
+    "devstart": "nodemon ./bin/www",
+    "prepare": "husky"
   },
   "dependencies": {
     "@sentry/node": "^8.48.0",
@@ -37,7 +38,18 @@
     "pug": "^3.0.2"
   },
   "devDependencies": {
-    "eslint": "^7.28.0",
-    "nodemon": "^3.1.9"
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-n": "^17.15.1",
+    "globals": "^15.14.0",
+    "grunt": "^1.6.1",
+    "grunt-contrib-uglify": "^5.2.2",
+    "grunt-contrib-watch": "^1.1.0",
+    "grunt-eslint": "^25.0.0",
+    "husky": "^9.1.7",
+    "nodemon": "^3.1.9",
+    "prettier": "3.4.2"
   }
 }
