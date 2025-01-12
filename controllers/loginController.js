@@ -205,7 +205,10 @@ exports.hasAccess = function (role) {
 
 exports.isSameUser = function () {
   return function (req, res, next) {
-    if (req.user && (req.user.name == req.params.name || hasAccess("Admin"))) {
+    if (
+      req.user &&
+      (req.user.name == req.params.name || exports.hasAccess("Admin"))
+    ) {
       return next();
     }
     res.redirect("/login");
