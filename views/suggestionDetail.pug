@@ -1,15 +1,16 @@
 extends layout
 
 block scripts
+  link(rel="stylesheet" href="/stylesheets/jdd.css")
   style.
-    #display > div.col-6 > div {
-      padding: .5rem;
-      border: 2px solid var(--secondary);
-      border-radius: 8px;
-      height: 100%;
+    span.pending {
+      color: Orange;
     }
-    #display pre {
-      max-height: 1028px;
+    span.approved {
+      color: YellowGreen;
+    }
+    span.refused {
+      color: Crimson;
     }
   script(src="/javascripts/suggestionDetail.js")
   script.
@@ -40,26 +41,27 @@ block content
           |
           |
           a(href=suggestion.page)= suggestion.page
-        p Status: #{suggestion.status}
-        p.text-center Note: not 100% accurate. Use
+        p Status:
           |
           |
-          a(href="https://jsoncompare.org/" target="_blank") https://jsoncompare.org/
-          |
-          | for detailed comparison.
-        div#display.row.mb-3
-          div.col-6
-            div
-              p.text-center.mb-0 Original
-              div.text-center: button#old.btn.btn-link Copy
-              pre#left= JSON.stringify(originalFile, undefined, 2)
-          div.col-6
-            div
-              p.text-center.mb-0 Suggestion
-              div.text-center: button#new.btn.btn-link Copy
-              pre#right= JSON.stringify(newFile, undefined, 2)
+          span.font-weight-bold(class=(suggestion.status))= suggestion.status
 
-        textarea#final.form-control.mb-3(style="min-height:260px;")= JSON.stringify(JSON.parse(suggestion.stringifiedJSON), undefined, 2)
+        //- jdd
+        button#compare.d-none Compare
+        .diffcontainer
+          div#report
+          pre#out.left.codeBlock
+          pre#out2.right.codeBlock
+          ul#toolbar.toolbar
+        .initContainer
+          div.left
+            textarea#textarealeft(spellcheck=false)= JSON.stringify(originalFile)
+            pre#errorLeft.error
+          div.right
+            textarea.right#textarearight(spellcheck=false)= JSON.stringify(newFile)
+            pre#errorRight.error
+
+        textarea#final.form-control.mb-3(style="min-height:320px;")= JSON.stringify(newFile, undefined, 4)
 
         div.row
           div.col
@@ -68,11 +70,6 @@ block content
             button#save.btn.btn-primary Save changes
           div.col: input#reason.form-control(type="text" value=suggestion.reason placeholder="reason")
 
-  script(src="/javascripts/jdd.js")
-  script.
-    leftBlockId = $('#left').attr('id');
-    rightBlockId = $('#right').attr('id');
-    $(document).jdd(leftBlockId, rightBlockId);
-    var originalFile = !{JSON.stringify(originalFile)};
-    var suggestionFile = !{JSON.stringify(newFile)};
-    console.log("Original", originalFile, "Suggestion", suggestionFile);
+  script(src="/javascripts/jdd/jsl/jsl.format.js")
+  script(src="/javascripts/jdd/jsl/jsl.parser.js")
+  script(src="/javascripts/jdd/jdd.js")
