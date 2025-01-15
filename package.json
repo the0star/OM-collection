@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "devstart": "nodemon ./bin/www"
+    "devstart": "nodemon ./bin/www",
+    "prepare": "husky"
   },
   "dependencies": {
     "@sentry/node": "^8.48.0",
@@ -38,6 +39,12 @@
   },
   "devDependencies": {
     "eslint": "^7.28.0",
-    "nodemon": "^3.1.9"
+    "lint-staged": "^15.3.0",
+    "nodemon": "^3.1.9",
+    "prettier": "3.4.2"
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix",
+    "*.{js,css,md}": "prettier --write"
   }
 }
