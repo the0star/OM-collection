@@ -6,8 +6,9 @@
   },
   "private": true,
   "scripts": {
+    "build": "gulp minify",
     "start": "node ./bin/www",
-    "devstart": "nodemon ./bin/www",
+    "devstart": "gulp devstart",
     "prepare": "node .husky/install.mjs"
   },
   "dependencies": {
@@ -48,10 +49,9 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-n": "^17.15.1",
     "globals": "^15.14.0",
-    "grunt": "^1.6.1",
-    "grunt-contrib-uglify": "^5.2.2",
-    "grunt-contrib-watch": "^1.1.0",
-    "grunt-eslint": "^25.0.0",
+    "gulp": "^5.0.0",
+    "gulp-nodemon": "^2.2.1",
+    "gulp-terser": "^2.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
     "nodemon": "^3.1.9",
