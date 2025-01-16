@@ -1,11 +1,14 @@
 {
   "name": "om-collection",
   "version": "0.0.0",
+  "engines": {
+    "node": "^20.9.0"
+  },
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
     "devstart": "nodemon ./bin/www",
-    "prepare": "if [ \"$CI\" != \"true\" ]; then husky; fi"
+    "prepare": "husky"
   },
   "dependencies": {
     "@sentry/node": "^8.48.0",
