@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "devstart": "nodemon ./bin/www",
-    "prepare": "husky"
+    "prepare": "if [ \"$CI\" != \"true\" ]; then husky; fi"
   },
   "dependencies": {
     "@sentry/node": "^8.48.0",
