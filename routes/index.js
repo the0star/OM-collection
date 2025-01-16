@@ -24,9 +24,9 @@ router.get("/closing_notice", miscController.closingNotice);
 router.get("/cards/:character", cardController.getCharacterCardPage);
 router.get("/cards", cardController.getCardsListPage);
 router.get(
-  "/hiddenCards",
-  loginController.hasAccess("Admin"),
-  cardController.getHiddenCardsListPage
+    "/hiddenCards",
+    loginController.hasAccess("Admin"),
+    cardController.getHiddenCardsListPage
 );
 router.get("/card_pages", cardController.getCardDirectory);
 
@@ -40,22 +40,22 @@ router.post("/login", loginController.login);
 router.get("/logout", loginController.isLoggedIn(), loginController.logout);
 router.get("/signup", loginController.getSignupPage);
 router.post(
-  "/signup",
-  loginController.validateSignupInput,
-  loginController.signup
+    "/signup",
+    loginController.validateSignupInput,
+    loginController.signup
 );
 router.post("/signup/checkUsername", loginController.signupCheckUsername);
 
 // User's personal collection
 router.get(
-  "/collection/getOwnedCards",
-  loginController.isLoggedIn(),
-  userController.getOwnedUniqueNames
+    "/collection/getOwnedCards",
+    loginController.isLoggedIn(),
+    userController.getOwnedUniqueNames
 );
 router.post(
-  "/collection/submitCollectionChanges",
-  loginController.isLoggedIn(),
-  userController.submitCollectionChanges
+    "/collection/submitCollectionChanges",
+    loginController.isLoggedIn(),
+    userController.submitCollectionChanges
 );
 router.get("/:username/collection", cardController.getOwnedCardsPage);
 router.get("/:username/favourites", cardController.getFavouriteCardsPage);
@@ -63,14 +63,14 @@ router.get("/:username/profile", cardController.getProfilePage);
 
 // User Management
 router.get(
-  "/userList",
-  loginController.hasAccess("Admin"),
-  userController.getUserListPage
+    "/userList",
+    loginController.hasAccess("Admin"),
+    userController.getUserListPage
 );
 router.post(
-  "/updateSupport",
-  loginController.hasAccess("Admin"),
-  userController.updateSupport
+    "/updateSupport",
+    loginController.hasAccess("Admin"),
+    userController.updateSupport
 );
 
 // Misc.
@@ -81,16 +81,16 @@ router.get("/getTreeData", cardController.getTreeData);
 router.get("/tree-tracker/rank-up", miscController.getTreeTracker);
 router.get("/tree-tracker", miscController.getTreeTracker);
 router.get("/tree_tracker/rank_up", (req, res) => {
-  res.redirect(301, "/tree-tracker/rank-up");
+    res.redirect(301, "/tree-tracker/rank-up");
 });
 router.get("/tree_tracker", (req, res) => {
-  res.redirect(301, "/tree-tracker");
+    res.redirect(301, "/tree-tracker");
 });
 
 router.post(
-  "/update_tree",
-  loginController.isLoggedIn(),
-  userController.updateUserTree
+    "/update_tree",
+    loginController.isLoggedIn(),
+    userController.updateUserTree
 );
 
 router.get("/getTeam", miscController.getTeam);
@@ -100,13 +100,13 @@ router.get("/stories", storyController.getStories);
 router.get("/story/main/:name", storyController.getStory);
 
 router.use("/images", (req, res, next) => {
-  const imgPaths = ["/cards/", "/events/", "/bg/"];
-  const match = imgPaths.find((path) => req.path.startsWith(path));
-  if (match) {
-    res.redirect(301, `${remoteImgURL}/images${req.path}`);
-  } else {
-    next();
-  }
+    const imgPaths = ["/cards/", "/events/", "/bg/"];
+    const match = imgPaths.find((path) => req.path.startsWith(path));
+    if (match) {
+        res.redirect(301, `${remoteImgURL}/images${req.path}`);
+    } else {
+        next();
+    }
 });
 
 module.exports = router;
