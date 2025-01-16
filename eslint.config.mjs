@@ -14,10 +14,10 @@ const compat = new FlatCompat({
 });
 
 export default [
+    ...compat.extends("eslint-config-jquery"),
     js.configs.recommended,
     nodePlugin.configs["flat/recommended-script"],
     eslintConfigPrettier,
-    ...compat.extends("eslint-config-jquery"),
     {
         languageOptions: {
             globals: {
