@@ -1,25 +1,35 @@
 import globals from "globals";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
+import { FlatCompat } from "@eslint/eslintrc";
+
 import eslintConfigPrettier from "eslint-config-prettier";
 import nodePlugin from "eslint-plugin-n";
 
-// TODO: add jQuery rules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const compat = new FlatCompat({
+    baseDirectory: __dirname,
+});
+
 export default [
-  js.configs.recommended,
-  nodePlugin.configs["flat/recommended-script"],
-  eslintConfigPrettier,
-  {
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.commonjs,
-      },
-      ecmaVersion: 12,
-      sourceType: "script",
+    js.configs.recommended,
+    nodePlugin.configs["flat/recommended-script"],
+    eslintConfigPrettier,
+    ...compat.extends("eslint-config-jquery"),
+    {
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+                ...globals.commonjs,
+            },
+            ecmaVersion: 12,
+            sourceType: "script",
+        },
+        rules: {
+            quotes: ["error", "double"],
+            semi: ["error", "always"],
+        },
     },
-    rules: {
-      quotes: ["error", "double"],
-      semi: ["error", "always"],
-    },
-  },
 ];
