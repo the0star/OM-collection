@@ -23,7 +23,7 @@ const userService = require("../services/userService");
 function getUserSessionData(user) {
     return {
         name: user.info.name,
-        email: user.info.email,
+        isEmailVerified: user.info.email ? true : false,
         supportStatus: user.info.supportStatus,
         id: user.id,
         // TODO: fix structure. Choose one or the other: user.info.type === "Admin" or user.isAdmin
@@ -492,12 +492,20 @@ passport.use(
 
 passport.serializeUser(function (user, next) {
     process.nextTick(function () {
-        next(null, user);
+        next(null, user.id);
     });
 });
 
-passport.deserializeUser(function (user, next) {
+passport.deserializeUser(function (id, next) {
     process.nextTick(function () {
-        return next(null, user);
+        Users.findById(id, function (err, user) {
+            if (err) {
+                console.error(err);
+                return next(null, false);
+            }
+            if (!user) return next(null, false);
+            const userInfo = getUserSessionData(user);
+            return next(null, userInfo);
+        });
     });
 });

@@ -32,13 +32,13 @@ app.set("view engine", "pug");
 
 mongoose.set("strictQuery", true);
 mongoose.connect(process.env.URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 });
 mongoose.Promise = global.Promise;
 mongoose.connection.on(
-  "error",
-  console.error.bind(console, "MongoDB connection error:")
+    "error",
+    console.error.bind(console, "MongoDB connection error:")
 );
 
 Sentry.setupExpressErrorHandler(app);
@@ -49,22 +49,22 @@ app.use(cookieParser());
 app.use(compression());
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(
-  logger("dev", { skip: (req, res) => req.app.get("env") !== "production" })
+    logger("dev", { skip: (req, res) => req.app.get("env") !== "production" })
 );
 
 app.use(express.static(__dirname + "/public"));
 
 app.use(
-  session({
-    store: new MongoStore({ url: process.env.URI }),
-    secret: process.env.SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 90,
-      sameSite: "strict",
-    },
-  })
+    session({
+        store: new MongoStore({ url: process.env.URI }),
+        secret: process.env.SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            maxAge: 1000 * 60 * 60 * 24 * 90,
+            sameSite: "lax",
+        },
+    })
 );
 
 app.use(passport.initialize());
@@ -74,8 +74,8 @@ app.use(localizationService.getLocalizationMiddleware(false));
 app.use(flash());
 
 app.use((req, res, next) => {
-  res.locals.cookies = req.cookies;
-  next();
+    res.locals.cookies = req.cookies;
+    next();
 });
 
 app.use("/", indexRouter);
@@ -86,35 +86,35 @@ app.use("/suggestion", suggestionRouter);
 app.use("/ask", askKarasuRouter);
 
 app.use((req, res, next) =>
-  next(createError(404, { title: "Page not found" }))
+    next(createError(404, { title: "Page not found" }))
 );
 
 app.use(function (err, req, res, next) {
-  let ignoredErrors = [401, 404];
-  if (!ignoredErrors.includes(err.status)) {
-    console.error(err);
-    if (req.app.get("env") === "production") {
-      Sentry.captureException(err);
+    let ignoredErrors = [401, 404];
+    if (!ignoredErrors.includes(err.status)) {
+        console.error(err);
+        if (req.app.get("env") === "production") {
+            Sentry.captureException(err);
+        }
     }
-  }
 
-  let errorTitle = err.title || "Something went wrong";
-  let errorMessage =
-    err.errorMessage ||
-    "Oops, looks like you found our error page. Double check the link, maybe?";
+    let errorTitle = err.title || "Something went wrong";
+    let errorMessage =
+        err.errorMessage ||
+        "Oops, looks like you found our error page. Double check the link, maybe?";
 
-  if (
-    req.is("application/*") ||
-    (req.headers["content-type"] &&
-      req.headers["content-type"].includes("application/json"))
-  ) {
-    res.json({ err: true, message: errorTitle });
-  } else {
-    res.status(err.status || 500);
-    res.locals.error = errorTitle;
-    res.locals.message = errorMessage;
-    res.render("error", { title: "Error", user: req.user });
-  }
+    if (
+        req.is("application/*") ||
+        (req.headers["content-type"] &&
+            req.headers["content-type"].includes("application/json"))
+    ) {
+        res.json({ err: true, message: errorTitle });
+    } else {
+        res.status(err.status || 500);
+        res.locals.error = errorTitle;
+        res.locals.message = errorMessage;
+        res.render("error", { title: "Error", user: req.user });
+    }
 });
 
 cacheService.init();

@@ -111,16 +111,16 @@ html(lang=t("lang"))
                 a(class="dropdown-item" href="/user/edits") Edits
             li(class="nav-item dropdown d-none d-md-block")
               a(class="dropdown-toggle nav-link text-white" role='button' id='accountDropdownButton' data-toggle='dropdown' aria-haspopup="true" aria-expanded="false")= t("common.account")
-                if !user.email
+                if !user.isEmailVerified
                   span(class="badge badge-pill badge-warning mx-1") !
               div(class="dropdown-menu dropdown-menu-right shadow px-2" aria-labelledby="accountDropdownButton")
                 a(class="dropdown-item" href="/user")= t("common.settings")
-                  if !user.email
+                  if !user.isEmailVerified
                     span(class="badge badge-pill badge-warning ml-1") !
                 a(class="dropdown-item" href='/logout')= t("common.logout")
             li(class="nav-item d-md-none")
               a(class="nav-link" href="/user")= t("common.settings")
-                if !user.email
+                if !user.isEmailVerified
                   span(class="badge badge-pill badge-warning ml-1") !
             li(class="nav-item d-md-none")
               a(class="nav-link" href='/logout')= t("common.logout")
