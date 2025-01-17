@@ -5,7 +5,6 @@ const Revisions = require("../models/revisions");
 const Sentry = require("@sentry/node");
 const createError = require("http-errors");
 
-const fileService = require("../services/fileService");
 const userService = require("../services/userService");
 
 const skillCharge = require("../staticData/skills.json");
@@ -458,7 +457,7 @@ exports.updateCard = async function (data) {
         data.cardData,
         { returnDocument: "after" }
     );
-    var promiseCard2 = promiseCard.then((result) => {
+    var promiseRevision = promiseCard.then((result) => {
         return Revisions.create({
             title: result.name,
             type: "card",
@@ -467,7 +466,7 @@ exports.updateCard = async function (data) {
             data: result,
         });
     });
-    promiseList.push(promiseCard2);
+    promiseList.push(promiseRevision);
 
     if (newUniqueName !== originalUniqueName) {
         var promiseCollections = userService.renameCardInCollections(
@@ -475,28 +474,6 @@ exports.updateCard = async function (data) {
             newUniqueName
         );
         promiseList.push(promiseCollections);
-    }
-
-    if (data.images) {
-        var promiseL = fileService.saveImage(
-            data.images.L,
-            originalUniqueName,
-            newUniqueName,
-            "cards/L"
-        );
-        var promiseLB = fileService.saveImage(
-            data.images.LB,
-            originalUniqueName + "_b",
-            newUniqueName + "_b",
-            "cards/L"
-        );
-        var promiseS = fileService.saveImage(
-            data.images.S,
-            originalUniqueName,
-            newUniqueName,
-            "cards/S"
-        );
-        promiseList.push(promiseL, promiseLB, promiseS);
     }
 
     return await Promise.all(promiseList)
@@ -573,7 +550,7 @@ function getDefaultTree(name, data) {
     return tree;
 }
 
-exports.addNewCard = async function (cardData, images = "", creator) {
+exports.addNewCard = async function (cardData, creator) {
     try {
         if (cardData.isHidden == "true") {
             if (cardData.number === "") {
@@ -595,28 +572,6 @@ exports.addNewCard = async function (cardData, images = "", creator) {
                 data: cardData,
             });
         }
-
-        if (images) {
-            await fileService.saveImage(
-                images.L,
-                null,
-                cardData.uniqueName,
-                "cards/L"
-            );
-            await fileService.saveImage(
-                images.LB,
-                null,
-                cardData.uniqueName + "_b",
-                "cards/L"
-            );
-            await fileService.saveImage(
-                images.S,
-                null,
-                cardData.uniqueName,
-                "cards/S"
-            );
-        }
-
         return { err: null, message: "Card added!" };
     } catch (err) {
         Sentry.captureException(err);
@@ -637,11 +592,7 @@ exports.deleteCard = async function (cardName) {
 
 async function removeCardDependencies(cardName) {
     var promiseCollections = userService.deleteCardInCollections(cardName);
-    var promiseL = await fileService.deleteImage("cards/L", cardName);
-    var promiseLB = await fileService.deleteImage("cards/L", cardName + "_b");
-    var promiseS = await fileService.deleteImage("cards/S", cardName);
-
-    return Promise.all([promiseCollections, promiseL, promiseLB, promiseS])
+    return Promise.all([promiseCollections])
         .catch((reason) => {
             return { success: false, error: reason };
         })

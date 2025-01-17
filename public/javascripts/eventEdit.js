@@ -99,15 +99,6 @@ function validateFields() {
         showAlert("danger", "English name must be filled");
         return false;
     }
-    let fileName = $("#uploadImage").val();
-    if (fileName) {
-        let parts = fileName.split(".");
-        let extension = parts[parts.length - 1];
-        if (extension !== "jpg") {
-            showAlert("danger", "Uploaded image must be jpg");
-            return false;
-        }
-    }
     return true;
 }
 

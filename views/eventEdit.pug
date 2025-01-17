@@ -43,7 +43,6 @@ mixin lockedStageEntry(stage = { name: '', requirement: '' })
 		button.btn.btn-outline-danger.remove-item(type="button") Remove
 
 block content
-	include mixins/imageUpload
 	-
 		var isMod = !card && !user.isAdmin;
 		function formatStages(stages, delimiter = ", ") {
@@ -214,13 +213,6 @@ block content
 						</div>
 					</div>
 				</div>
-				if isMod
-					hr
-					style.
-						#imageResult {
-							max-height: 360px;
-						}
-					+uploadImage("Event image", data ? "/images/events/" + data.name.en + ".jpg" : "#")
 				hr
 				button#submit.btn.btn-primary.mr-2 Submit Change
 				span#cd
@@ -238,21 +230,15 @@ block content
 				+lockedStageEntry()
 	if isMod
 		script.
-			function prepareImageData() {
-				let image = readImage($('#uploadImage')[0]);
-				image
-					.then(res => sendRequest(res))
-					.catch(err => showAlert("danger", "Can't load image: " + err.message));
-			}
 			function saveChanges(e) {
 				e.preventDefault();
 				if (!validateFields()) {
 					return;
 				}
-				prepareImageData();
+				sendRequest();
 			}
-			function sendRequest(imageData) {
-				$.post(location.pathname, { data: prepareEventData(), img: imageData }).done(
+			function sendRequest() {
+				$.post(location.pathname, { data: prepareEventData() }).done(
 					function(result) {
 						if (result.err) {
 							showAlert("danger", result.message);

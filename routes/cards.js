@@ -8,7 +8,11 @@ const loginController = require("../controllers/loginController");
 /* Admin */
 
 // Get card edit page
-// router.get('/new', loginController.hasAccess("Moderator"), cardsController.getEditCardPage);
+router.get(
+    "/new",
+    loginController.hasAccess("Moderator"),
+    cardsController.getEditCardPage
+);
 router.get(
     "/:card/edit",
     loginController.canEdit("regular"),
@@ -16,7 +20,11 @@ router.get(
 );
 
 // Edit or add card
-// router.post('/new', loginController.hasAccess("Moderator"), cardsController.addNewCard);
+router.post(
+    "/new",
+    loginController.hasAccess("Moderator"),
+    cardsController.addNewCard
+);
 router.post(
     "/:card/edit",
     loginController.canEdit("trusted"),

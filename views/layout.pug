@@ -77,8 +77,8 @@ html(lang=t("lang"))
             li(class="nav-item dropdown")
               a(class="nav-link dropdown-toggle" role='button' id='adminDropdownButton' data-toggle='dropdown' aria-haspopup="true" aria-expanded="false") Admin tab
               div(class="dropdown-menu shadow px-2" aria-labelledby="adminDropdownButton")
-                //- a(class="dropdown-item" href='/card/new') Add new card
-                //- a(class="dropdown-item" href="/event/new") Add new event
+                a(class="dropdown-item" href='/card/new') Add new card
+                a(class="dropdown-item" href="/event/new") Add new event
                 if user.isAdmin
                   a(class="dropdown-item" href='/hiddenCards') Hidden cards
                   a(class="dropdown-item" href='/userList') User List

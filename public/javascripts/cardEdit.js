@@ -14,10 +14,6 @@ $(document).ready(function () {
 
     $("#name").on("change", fillUniqueName);
 
-    $("#uploadL").on("change", { extra: "#imageResultL" }, imageUploaded);
-    $("#uploadLB").on("change", { extra: "#imageResultLB" }, imageUploaded);
-    $("#uploadS").on("change", { extra: "#imageResultS" }, imageUploaded);
-
     $("#submit").on("click", submitChange); // function is in pug file
 
     $("#addEvent").on("click", addEvent);
@@ -44,19 +40,6 @@ function fillUniqueName() {
     $("#uniqueName").val(uniqueName);
 }
 
-function imageUploaded(e) {
-    if (this.files && this.files[0]) {
-        var reader = new FileReader();
-        var imageArea = e.data.extra;
-
-        reader.onload = function (e) {
-            $(imageArea).attr("src", e.target.result);
-            $(imageArea).siblings("button").show();
-        };
-        reader.readAsDataURL(this.files[0]);
-    }
-}
-
 function validateFields() {
     var uniqueName = $("#uniqueName").val();
     if (/[\\/:*?"<>| ]/.test(uniqueName)) {
@@ -66,18 +49,6 @@ function validateFields() {
     if (!$("#name").val() || !uniqueName) {
         showAlert("danger", "Name and unique name must be filled");
         return false;
-    }
-    var images = $(".upload");
-    for (let image of images) {
-        let fileName = $(image).val();
-        if (fileName) {
-            let parts = fileName.split(".");
-            let extension = parts[parts.length - 1];
-            if (extension !== "jpg") {
-                showAlert("danger", "All uploaded images must be jpg");
-                return false;
-            }
-        }
     }
     return true;
 }

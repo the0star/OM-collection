@@ -1,6 +1,4 @@
 const createError = require("http-errors");
-const async = require("async");
-const fs = require("fs");
 const Sentry = require("@sentry/node");
 
 const miscController = require("../controllers/miscController");
@@ -8,7 +6,6 @@ const miscController = require("../controllers/miscController");
 const cardService = require("../services/cardService");
 const eventService = require("../services/eventService");
 const userService = require("../services/userService");
-const fileService = require("../services/fileService");
 const suggestionService = require("../services/suggestionService");
 
 exports.index = function (req, res, next) {
@@ -585,11 +582,7 @@ exports.getEditCardPage = async function (req, res, next) {
 };
 
 exports.addNewCard = async function (req, res) {
-    var result = await cardService.addNewCard(
-        req.body.cardData,
-        req.body.images,
-        req.user.name
-    );
+    var result = await cardService.addNewCard(req.body.cardData, req.user.name);
     return res.json(result);
 };
 
@@ -606,7 +599,6 @@ exports.updateCard = async function (req, res) {
         user: req.user.name,
         originalUniqueName: req.params.card,
         cardData: req.body.cardData,
-        images: req.body.images,
     });
 
     if (result.err) {

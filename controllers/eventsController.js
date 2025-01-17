@@ -222,11 +222,7 @@ exports.getEventAddPage = async function (req, res, next) {
 
 exports.addEvent = async function (req, res) {
     try {
-        var result = await eventService.addEvent(
-            req.body.data,
-            req.body.img,
-            req.user.name
-        );
+        var result = await eventService.addEvent(req.body.data, req.user.name);
         return res.json(result);
     } catch (e) {
         return res.json({ err: true, message: e.message });
@@ -249,7 +245,6 @@ exports.updateEvent = async function (req, res) {
         let result = await eventService.updateEvent(
             eventName,
             req.body.data,
-            req.body.img,
             req.user.name
         );
         if (result.err) throw new Error(result.message);

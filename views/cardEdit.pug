@@ -3,7 +3,6 @@ extends layout
 block scripts
 	link(href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css" rel="stylesheet")
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-	link(rel="stylesheet" href="/stylesheets/imageUpload.css")
 	script(src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js")
 	<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	script(src="/dist/js/cardEdit.js")
@@ -170,61 +169,6 @@ block content
 									div(class='custom-control custom-checkbox'+(user.isAdmin?'':" d-none"))
 										input(class='custom-control-input' type="checkbox" id="isHidden" name="isHidden")
 										label(class='custom-control-label' for="isHidden") Hidden card
-						if isMod
-							hr
-							div.row
-								div.col-12.col-md-4
-									div(class='input-group mb-2 px-2 py-2 rounded-pill bg-white shadow-sm border border-primary')
-										input(id="uploadL" type="file" class="form-control border-0 upload" accept=".jpg")
-										label(for="uploadL" class="font-weight-light text-muted uploadLabel") Original image
-										div(class="input-group-append")
-											label(for="uploadL" class="btn btn-light m-0 rounded-pill px-4")
-												svg(width="1.2em" height="1.2em" viewBox="0 0 16 16" class="bi bi-cloud-upload" fill="#4e5761" xmlns="http://www.w3.org/2000/svg" style='position: relative; right: 4px;')
-													path(fill-rule="evenodd" d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.166 4.579C14.758 4.804 16 6.137 16 7.773 16 9.569 14.502 11 12.687 11H10a.5.5 0 0 1 0-1h2.688C13.979 10 15 8.988 15 7.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 2.825 10.328 1 8 1a4.53 4.53 0 0 0-2.941 1.1c-.757.652-1.153 1.438-1.153 2.055v.448l-.445.049C2.064 4.805 1 5.952 1 7.318 1 8.785 2.23 10 3.781 10H6a.5.5 0 0 1 0 1H3.781C1.708 11 0 9.366 0 7.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383z")
-													path(fill-rule="evenodd" d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3z")
-												small(class="text-uppercase font-weight-bold text-muted") Choose file
-								div.col-12.col-md-4
-									div(class="input-group mb-2 px-2 py-2 rounded-pill bg-white shadow-sm border border-primary")
-										input(id="uploadLB" type="file" class="form-control border-0 upload" accept=".jpg")
-										label(for="uploadLB" class="font-weight-light text-muted uploadLabel") Bloomed image
-										div(class="input-group-append")
-											label(for="uploadLB" class="btn btn-light m-0 rounded-pill px-4")
-												svg(width="1.2em" height="1.2em" viewBox="0 0 16 16" class="bi bi-cloud-upload" fill="#4e5761" xmlns="http://www.w3.org/2000/svg" style='position: relative; right: 4px;')
-													path(fill-rule="evenodd" d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.166 4.579C14.758 4.804 16 6.137 16 7.773 16 9.569 14.502 11 12.687 11H10a.5.5 0 0 1 0-1h2.688C13.979 10 15 8.988 15 7.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 2.825 10.328 1 8 1a4.53 4.53 0 0 0-2.941 1.1c-.757.652-1.153 1.438-1.153 2.055v.448l-.445.049C2.064 4.805 1 5.952 1 7.318 1 8.785 2.23 10 3.781 10H6a.5.5 0 0 1 0 1H3.781C1.708 11 0 9.366 0 7.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383z")
-													path(fill-rule="evenodd" d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3z")
-												small(class="text-uppercase font-weight-bold text-muted") Choose file
-								div.col-12.col-md-4
-									div(class="input-group mb-2 px-2 py-2 rounded-pill bg-white shadow-sm border border-primary")
-										input(id="uploadS" type="file" class="form-control border-0 upload" accept=".jpg")
-										label(for="uploadS" class="font-weight-light text-muted uploadLabel") Preview image
-										div(class="input-group-append")
-											label(for="uploadS" class="btn btn-light m-0 rounded-pill px-4")
-												svg(width="1.2em" height="1.2em" viewBox="0 0 16 16" class="bi bi-cloud-upload" fill="#4e5761" xmlns="http://www.w3.org/2000/svg" style='position: relative; right: 4px;')
-													path(fill-rule="evenodd" d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.166 4.579C14.758 4.804 16 6.137 16 7.773 16 9.569 14.502 11 12.687 11H10a.5.5 0 0 1 0-1h2.688C13.979 10 15 8.988 15 7.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 2.825 10.328 1 8 1a4.53 4.53 0 0 0-2.941 1.1c-.757.652-1.153 1.438-1.153 2.055v.448l-.445.049C2.064 4.805 1 5.952 1 7.318 1 8.785 2.23 10 3.781 10H6a.5.5 0 0 1 0 1H3.781C1.708 11 0 9.366 0 7.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383z")
-													path(fill-rule="evenodd" d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3z")
-												small(class="text-uppercase font-weight-bold text-muted") Choose file
-							div(class='row mx-0 mb-4')
-								div.col-12.col-md-4
-									div(class="image-area mt-2 h-100")
-										div(style='position: relative')
-											if card
-												img(id="imageResultL" alt="" class="img-fluid rounded shadow-sm mx-auto d-block" src="/images/cards/L/" + card.uniqueName + ".jpg")
-											else
-												img(id="imageResultL" alt="" class="img-fluid rounded shadow-sm mx-auto d-block" src="#")
-								div.col-12.col-md-4
-									div(class="image-area mt-2 h-100")
-										div(style='position: relative')
-											if card
-												img(id="imageResultLB" alt="" class="img-fluid rounded shadow-sm mx-auto d-block" src="/images/cards/L/" + card.uniqueName + "_b.jpg")
-											else
-												img(id="imageResultLB" alt="" class="img-fluid rounded shadow-sm mx-auto d-block" src="#")
-								div.col-12.col-md-4
-									div(class="image-area mt-2 h-100 d-flex")
-										div(class=' mx-auto align-self-center' style='position: relative')
-											if card
-												img(id="imageResultS" alt="" class="img-fluid rounded shadow-sm d-block" style='max-width: 120px;' src="/images/cards/S/" + card.uniqueName + ".jpg")
-											else
-												img(id="imageResultS" alt="" class="img-fluid rounded shadow-sm mx-auto d-block" style='max-width: 120px;' src="#")
 					div#strength.tab-pane.fade(role="tabpanel" aria-labelledby="strength-tab")
 						form
 							div.table-responsive-lg
@@ -355,7 +299,6 @@ block content
 						div.custom-control.custom-radio
 							input.custom-control-input(type="radio" name="animationType" id="inlineRadio3" value="homescreen" checked=(card&&card.animation&&card.animation==="homescreen"))
 							label.custom-control-label(for="inlineRadio3") homescreen/moving picture
-				hr
 				button#submit.btn.btn-primary.mr-2(type="submit") Save
 				span#cd
 
@@ -370,50 +313,17 @@ block content
 	else
 		if isMod
 			script.
-				function readImage(upload) {
-					return new Promise((resolve, reject) => {
-						if (upload.files && upload.files[0]) {
-							let reader = new FileReader();
-							reader.onloadend = function (e) {
-								resolve(e.target.result);
-							};
-							try {
-								reader.readAsDataURL(upload.files[0]);
-							} catch(err) {
-								reject(err);
-							}
-						} else {
-							resolve('');
-						}
-					});
-				}
-				function prepareCardImages() {
-					var images = { L: '', LB: '', S: '' };
-					var readL = readImage($('#uploadL')[0]);
-					var readLB = readImage($('#uploadLB')[0]);
-					var readS = readImage($('#uploadS')[0]);
-
-					Promise.all([readL, readLB, readS]).then(values => {
-						if (values[0]) images.L = values[0];
-						if (values[1]) images.LB = values[1];
-						if (values[2]) images.S = values[2];
-						sendRequest(images);
-					}, reason => {
-						showAlert("danger", "Can't load images\n" + reason.message);
-					});
-				}
 				function submitChange(e) {
 					e.preventDefault();
 					if (!validateFields()) {
 						return;
 					}
-					prepareCardImages();
+					sendRequest();
 				}
-				function sendRequest(images) {
+				function sendRequest() {
 					let cardData = getCardData();
 					$.post(location.pathname, {
 						cardData: cardData,
-						images: images
 					}, function(result) {
 						if (result.err) {
 							showAlert("danger", result.message);

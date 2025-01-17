@@ -1,5 +1,4 @@
 const Sentry = require("@sentry/node");
-const async = require("async");
 const dayjs = require("dayjs");
 const createError = require("http-errors");
 
@@ -14,9 +13,6 @@ dayjs.extend(timezone);
 const Events = require("../models/events");
 const APPresets = require("../models/apPresets");
 const Revisions = require("../models/revisions");
-
-const cacheService = require("../services/cacheService");
-const fileService = require("../services/fileService");
 
 exports.getEvents = async function (condition = {}, sort = { start: -1 }) {
     try {
@@ -50,7 +46,6 @@ exports.addEvent = async function (data, img, user) {
             timestamp: new Date(),
             data: data,
         });
-        await fileService.saveImage(img, null, data.name.en, "events");
 
         return { err: null, message: "Event created!" };
     } catch (e) {
@@ -59,7 +54,7 @@ exports.addEvent = async function (data, img, user) {
     }
 };
 
-exports.updateEvent = async function (originalName, data, img = null, user) {
+exports.updateEvent = async function (originalName, data, user) {
     try {
         data.start = stringToDateTime(data.start);
         data.end = stringToDateTime(data.end);
@@ -91,15 +86,6 @@ exports.updateEvent = async function (originalName, data, img = null, user) {
             data: data,
         });
 
-        if (img) {
-            await fileService.saveImage(
-                img,
-                originalName,
-                data.name.en,
-                "events"
-            );
-        }
-
         return { err: null, message: "Event updated!" };
     } catch (e) {
         Sentry.captureException(e);
@@ -109,10 +95,7 @@ exports.updateEvent = async function (originalName, data, img = null, user) {
 
 exports.deleteEvent = async function (eventName) {
     try {
-        var event = await Events.findOneAndRemove({ "name.en": eventName });
-        if (event) {
-            await fileService.deleteImage("events", event.name.en);
-        }
+        await Events.findOneAndRemove({ "name.en": eventName });
         return { err: null, message: "Event deleted!" };
     } catch (err) {
         Sentry.captureException(err);
