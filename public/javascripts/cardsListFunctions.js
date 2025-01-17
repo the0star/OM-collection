@@ -252,6 +252,11 @@ function initInfiniteScroll() {
             prefill: false,
             spinner: $("#demoncards>.spinner")[0],
         });
+        ias.on("last", function () {
+            for (let i = 0; i < 9; i++) {
+                $("#demoncards>.ias").append(createCardElement());
+            }
+        });
         ias.next();
         // ias.on("appended", fadeInImages);
     } else {
@@ -272,6 +277,11 @@ function initInfiniteScroll() {
             logger: false,
             prefill: false,
             spinner: $("#memorycards>.spinner")[0],
+        });
+        ias.on("last", function () {
+            for (let i = 0; i < 9; i++) {
+                $("#memorycards>.ias").append(createCardElement());
+            }
         });
         ias2.next();
         // ias2.on("appended", fadeInImages);
