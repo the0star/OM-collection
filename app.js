@@ -31,15 +31,15 @@ app.set("views", __dirname + "/views");
 app.set("view engine", "pug");
 
 mongoose.set("strictQuery", true);
-mongoose.connect(process.env.URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
-mongoose.Promise = global.Promise;
-mongoose.connection.on(
-    "error",
-    console.error.bind(console, "MongoDB connection error:")
-);
+mongoose
+    .connect(process.env.URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
+    .then(() => {
+        cacheService.init();
+    })
+    .catch(console.error.bind(console, "MongoDB connection error:"));
 
 Sentry.setupExpressErrorHandler(app);
 
@@ -116,7 +116,5 @@ app.use(function (err, req, res, next) {
         res.render("error", { title: "Error", user: req.user });
     }
 });
-
-cacheService.init();
 
 module.exports = app;
