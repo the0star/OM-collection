@@ -6,7 +6,7 @@ block scripts
     var i18next = { "collected_count": "#{t("cards.collected_count", { percentage: "undefined" })}", "favourite_count": "!{t("cards.favourite_count", { percentage: "undefined" })}" };
     const CARD_NAME = !{JSON.stringify(card.uniqueName)};
   if user && !isHidden
-    script(src="/javascripts/cardDetailFunctions.js")
+    script(src="/dist/js/cardDetailFunctions.js")
     script.
       var stats = !{JSON.stringify(stats)};
   else

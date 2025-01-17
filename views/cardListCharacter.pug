@@ -1,11 +1,11 @@
 extends layout
 
 block scripts
-  script(src="/javascripts/lazyload.js")
+  script(src="/dist/js/lazyload.js")
   script(src="https://unpkg.com/vue@3/dist/vue.global.prod.js")
   script.
     const character = !{JSON.stringify(character)};
-  script(type="module" src="/javascripts/cardListCharacter.js")
+  script(type="module" src="/dist/js/cardListCharacter.js")
 
 block content
   div.container

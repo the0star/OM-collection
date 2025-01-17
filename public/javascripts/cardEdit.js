@@ -1,216 +1,218 @@
 let originalData;
 let selectPickerOptions = {
-	liveSearch: true,
-	style: '',
-	styleBase: 'form-control mb-0',
-	title: 'required item name'
+    liveSearch: true,
+    style: "",
+    styleBase: "form-control mb-0",
+    title: "required item name",
 };
 
-$(document).ready(function() {
-	originalData = JSON.stringify(getCardData());
+$(document).ready(function () {
+    originalData = JSON.stringify(getCardData());
 
-	// TODO: add style
-	$(".autocomplete").autocomplete({ source: rewards });
+    // TODO: add style
+    $(".autocomplete").autocomplete({ source: rewards });
 
-	$("#name").on("change", fillUniqueName);
+    $("#name").on("change", fillUniqueName);
 
-	$("#uploadL").on("change", {extra: "#imageResultL"}, imageUploaded);
-	$("#uploadLB").on("change", {extra: "#imageResultLB"}, imageUploaded);
-	$("#uploadS").on("change", {extra: "#imageResultS"}, imageUploaded);
+    $("#uploadL").on("change", { extra: "#imageResultL" }, imageUploaded);
+    $("#uploadLB").on("change", { extra: "#imageResultLB" }, imageUploaded);
+    $("#uploadS").on("change", { extra: "#imageResultS" }, imageUploaded);
 
-	$("#submit").on("click", submitChange);  // function is in pug file
+    $("#submit").on("click", submitChange); // function is in pug file
 
-	$("#addEvent").on("click", addEvent);
-	$("#removeEvent").on("click", removeEvent);
+    $("#addEvent").on("click", addEvent);
+    $("#removeEvent").on("click", removeEvent);
 
-	$('.item-select').selectpicker(selectPickerOptions);
+    $(".item-select").selectpicker(selectPickerOptions);
 });
 
-$(document).on("click", ".add-item", function() {
-	let template = $(this).data("clone");
-	$(this).parent().children("div:first-of-type").append($(template).html());
-	// TODO: auto add node count to new node
-	$(".autocomplete").autocomplete({ source: rewards });
-	$('.item-select').selectpicker(selectPickerOptions);
+$(document).on("click", ".add-item", function () {
+    let template = $(this).data("clone");
+    $(this).parent().children("div:first-of-type").append($(template).html());
+    // TODO: auto add node count to new node
+    $(".autocomplete").autocomplete({ source: rewards });
+    $(".item-select").selectpicker(selectPickerOptions);
 });
-$(document).on("click", ".remove-item", function() {
-	$(this).parent().remove();
+$(document).on("click", ".remove-item", function () {
+    $(this).parent().remove();
 });
 
 function fillUniqueName() {
-	var name = $("#name").val();
-	var uniqueName = name.replace(/[\\/:*?"<>|]/g, "");
-	uniqueName = uniqueName.replace(/ /g, "_");
-	$("#uniqueName").val(uniqueName);
+    var name = $("#name").val();
+    var uniqueName = name.replace(/[\\/:*?"<>|]/g, "");
+    uniqueName = uniqueName.replace(/ /g, "_");
+    $("#uniqueName").val(uniqueName);
 }
 
 function imageUploaded(e) {
-	if (this.files && this.files[0]) {
-		var reader = new FileReader();
-		var imageArea = e.data.extra;
+    if (this.files && this.files[0]) {
+        var reader = new FileReader();
+        var imageArea = e.data.extra;
 
-		reader.onload = function (e) {
-			$(imageArea).attr("src", e.target.result);
-			$(imageArea).siblings("button").show();
-		};
-		reader.readAsDataURL(this.files[0]);
-	}
+        reader.onload = function (e) {
+            $(imageArea).attr("src", e.target.result);
+            $(imageArea).siblings("button").show();
+        };
+        reader.readAsDataURL(this.files[0]);
+    }
 }
 
 function validateFields() {
-	var uniqueName = $("#uniqueName").val();
-	if (/[\\/:*?"<>| ]/.test(uniqueName)) {
-		showAlert("danger", "Invalid unique name");
-		return false;
-	}
-	if (!$("#name").val() || !uniqueName) {
-		showAlert("danger", "Name and unique name must be filled");
-		return false;
-	}
-	var images = $(".upload");
-	for (let image of images) {
-		let fileName = $(image).val();
-		if (fileName) {
-			let parts = fileName.split(".");
-			let extension = parts[parts.length - 1];
-			if (extension !== "jpg") {
-				showAlert("danger", "All uploaded images must be jpg");
-				return false;
-			}
-		}
-	}
-	return true;
+    var uniqueName = $("#uniqueName").val();
+    if (/[\\/:*?"<>| ]/.test(uniqueName)) {
+        showAlert("danger", "Invalid unique name");
+        return false;
+    }
+    if (!$("#name").val() || !uniqueName) {
+        showAlert("danger", "Name and unique name must be filled");
+        return false;
+    }
+    var images = $(".upload");
+    for (let image of images) {
+        let fileName = $(image).val();
+        if (fileName) {
+            let parts = fileName.split(".");
+            let extension = parts[parts.length - 1];
+            if (extension !== "jpg") {
+                showAlert("danger", "All uploaded images must be jpg");
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 function getCardData() {
-	let data = {
-		name: $("#name").val(),
-		uniqueName: $("#uniqueName").val(),
-		ja_name: $("#ja_name").val(),
-		source: getCardSource("#source"),
-		strength: getCardStrength(),
-		type: $("#type").val(),
-		rarity: $("#rarity").val(),
-		attribute: $("#attribute").val(),
-		characters: getSelectedCharacters(),
-		dt: getTreeRewards(),
-		skills: getCardSkills(),
-		number: $("#number").val(),
-		isHidden: $("#isHidden")?$("#isHidden").prop("checked"):false
-	};
-	if (data.rarity === "UR+") {
-		data.animation = $("input[name='animationType']:checked").val();
-	}
-	return data;
+    let data = {
+        name: $("#name").val(),
+        uniqueName: $("#uniqueName").val(),
+        ja_name: $("#ja_name").val(),
+        source: getCardSource("#source"),
+        strength: getCardStrength(),
+        type: $("#type").val(),
+        rarity: $("#rarity").val(),
+        attribute: $("#attribute").val(),
+        characters: getSelectedCharacters(),
+        dt: getTreeRewards(),
+        skills: getCardSkills(),
+        number: $("#number").val(),
+        isHidden: $("#isHidden") ? $("#isHidden").prop("checked") : false,
+    };
+    if (data.rarity === "UR+") {
+        data.animation = $("input[name='animationType']:checked").val();
+    }
+    return data;
 }
 
 function getCardStrength() {
-	let formData = new FormData($("div#strength>form")[0]);
-	let data = {
-		pride: [],
-		greed: [],
-		envy: [],
-		wrath: [],
-		lust: [],
-		gluttony: [],
-		sloth: []
-	};
+    let formData = new FormData($("div#strength>form")[0]);
+    let data = {
+        pride: [],
+        greed: [],
+        envy: [],
+        wrath: [],
+        lust: [],
+        gluttony: [],
+        sloth: [],
+    };
 
-	for (var pair of formData.entries()) {
-		data[pair[0]].push(parseInt(pair[1]));
-	}
+    for (var pair of formData.entries()) {
+        data[pair[0]].push(parseInt(pair[1]));
+    }
 
-	for (const key in data) {
-		data[key] = {
-			min: data[key][0],
-			max: data[key][1],
-			fdt: data[key][2]
-		}
-	}
+    for (const key in data) {
+        data[key] = {
+            min: data[key][0],
+            max: data[key][1],
+            fdt: data[key][2],
+        };
+    }
 
-	return data;
+    return data;
 }
 
 function getSelectedCharacters() {
-	var arr = [];
-	$("input[name=\"characters\"]:checked").each(function() {
-		arr.push($(this).val());
-	});
-	return arr;
+    var arr = [];
+    $('input[name="characters"]:checked').each(function () {
+        arr.push($(this).val());
+    });
+    return arr;
 }
 
 function getCardSource(src) {
-	var list = $.map($(src).children(), input => $(input).val()).filter(x => x !== "");
-	return list;
+    var list = $.map($(src).children(), (input) => $(input).val()).filter(
+        (x) => x !== ""
+    );
+    return list;
 }
 
 function addEvent() {
-	var target = $(this).data("target");
-	$(target).append("<input class=\"form-control\" type=\"text\">");
+    var target = $(this).data("target");
+    $(target).append('<input class="form-control" type="text">');
 }
 
 function removeEvent() {
-	var target = $(this).data("target");
-	$(target + " input:last-child").remove();
+    var target = $(this).data("target");
+    $(target + " input:last-child").remove();
 }
 
 function getTreeRewards() {
-	let rewards = [];
+    let rewards = [];
 
-	$("div#tree form").each(function() {
-		let formData = new FormData(this);
-		let node = { requirements: [] };
-		let name;
-		for(let pair of formData.entries()) {
-			if (["count", "amount", "grimmCost"].includes(pair[0])) {
-				pair[1] = parseInt(pair[1]) || null;
-			}
-			if (pair[0] === "name") {
-				name = pair[1];
-			} else if (pair[0] === "amount") {
-				node.requirements.push({ name: name, amount: pair[1] });
-			} else if (pair[0] === "_id" && pair[1] === '') {
-				continue;
-			} else {
-				node[pair[0]] = pair[1];
-			}
-		}
+    $("div#tree form").each(function () {
+        let formData = new FormData(this);
+        let node = { requirements: [] };
+        let name;
+        for (let pair of formData.entries()) {
+            if (["count", "amount", "grimmCost"].includes(pair[0])) {
+                pair[1] = parseInt(pair[1]) || null;
+            }
+            if (pair[0] === "name") {
+                name = pair[1];
+            } else if (pair[0] === "amount") {
+                node.requirements.push({ name: name, amount: pair[1] });
+            } else if (pair[0] === "_id" && pair[1] === "") {
+                continue;
+            } else {
+                node[pair[0]] = pair[1];
+            }
+        }
 
-		if (node.type === "level_up") {
-			node.reward = `Lv.${node.reward} Rank Up`
-		}
+        if (node.type === "level_up") {
+            node.reward = `Lv.${node.reward} Rank Up`;
+        }
 
-		rewards.push(node);
-	});
+        rewards.push(node);
+    });
 
-	rewards = rewards.filter(x => x.reward && x.type);
+    rewards = rewards.filter((x) => x.reward && x.type);
 
-	return rewards;
+    return rewards;
 }
 
 function getCardSkills() {
-	let skills = [];
+    let skills = [];
 
-	$("div#skills form").each(function() {
-		let formData = new FormData(this);
-		let skill = { skillType: '', title: '', description: '' };
-		for(let pair of formData.entries()) {
-			skill[pair[0]] = pair[1].trim();
-		}
-		skills.push(skill);
-	});
+    $("div#skills form").each(function () {
+        let formData = new FormData(this);
+        let skill = { skillType: "", title: "", description: "" };
+        for (let pair of formData.entries()) {
+            skill[pair[0]] = pair[1].trim();
+        }
+        skills.push(skill);
+    });
 
-	return skills.filter(x => x.skillType && x.title && x.description);
+    return skills.filter((x) => x.skillType && x.title && x.description);
 }
 
 function setCD(countdown) {
-	$("button#submit").prop("disabled", true);
-	let cd = setInterval(() => {
-		$("span#cd").text(--countdown + 's');
-		if (countdown === 0) {
-			clearInterval(cd);
-			$("span#cd").text('');
-			$("button#submit").prop("disabled", false);
-		}
-	}, 1000);
+    $("button#submit").prop("disabled", true);
+    let cd = setInterval(() => {
+        $("span#cd").text(--countdown + "s");
+        if (countdown === 0) {
+            clearInterval(cd);
+            $("span#cd").text("");
+            $("button#submit").prop("disabled", false);
+        }
+    }, 1000);
 }

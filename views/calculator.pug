@@ -3,7 +3,7 @@ extends layout
 block scripts
 	link(rel="stylesheet" href="/stylesheets/calculator.css")
 	if (event.end >= new Date())
-		script(src="/javascripts/calculator.js")
+		script(src="/dist/js/calculator.js")
 		script.
 			var endDate = new Date(!{JSON.stringify(event.end)});
 			startCountdown();

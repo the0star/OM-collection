@@ -1,7 +1,7 @@
 extends layout
 
 block scripts
-  script(src="/javascripts/lazyload.js")
+  script(src="/dist/js/lazyload.js")
   script.
     $(function() {
       let openedTab = localStorage.getItem("eventTab") ? localStorage.getItem("eventTab") : "popquiz-tab";

@@ -12,7 +12,7 @@ block scripts
     span.refused {
       color: Crimson;
     }
-  script(src="/javascripts/suggestionDetail.js")
+  script(src="/dist/js/suggestionDetail.js")
   script.
     const PATH = !{JSON.stringify(suggestion.page.split('/'))};
 
@@ -70,6 +70,6 @@ block content
             button#save.btn.btn-primary Save changes
           div.col: input#reason.form-control(type="text" value=suggestion.reason placeholder="reason")
 
-  script(src="/javascripts/jdd/jsl/jsl.format.js")
-  script(src="/javascripts/jdd/jsl/jsl.parser.js")
-  script(src="/javascripts/jdd/jdd.js")
+  script(src="/dist/js/jdd/jsl/jsl.format.js")
+  script(src="/dist/js/jdd/jsl/jsl.parser.js")
+  script(src="/dist/js/jdd/jdd.js")
