@@ -1,5 +1,3 @@
-// $(document).on("koolAid", showFallback);
-
 $(document).ready(function () {
     $("head").append(
         `<meta property="og:url" content="${window.location.href}">`
@@ -79,45 +77,6 @@ $(document).ready(function () {
         setCookie("darktheme", $("body").hasClass("dark-theme"));
     });
 });
-
-// async function detectAdBlock(callback) {
-//   let adBlockEnabled = false;
-//   const googleAdUrl = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=";
-//   try {
-//     await fetch(new Request(googleAdUrl)).catch((_) => (adBlockEnabled = true));
-//   } catch(e) {
-//     adBlockEnabled = true;
-// 	} finally {
-// 		if (callback) {
-// 			callback(adBlockEnabled);
-// 		}
-//   }
-// }
-
-// $(window).on("load", function() {
-// 	detectAdBlock(adBlockEnabled => {
-// 		if (adBlockEnabled) {
-// 			showFallback();
-// 		}
-// 		else {
-// 			let script = document.createElement('script');
-// 			script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1710157662563352";
-// 			script.crossorigin = "anonymous";
-// 			script.onerror = () => document.dispatchEvent(new CustomEvent('koolAid'));
-// 			document.head.append(script);
-// 		}
-// 	});
-// });
-
-// function showFallback() {
-// 	$(".kool-aid").each(function() {
-// 		let templateId = "#" + $(this).attr("data-fallback");
-// 		let fallback = $.parseHTML($(templateId).html());
-// 		$(fallback[0]).height($(this).height());
-// 		$(this).find(".row").hide();
-// 		$(this).append(fallback);
-// 	});
-// }
 
 $(window).on("scroll", () => {
     switchBackToTopButton();
