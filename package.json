@@ -8,6 +8,7 @@
   "scripts": {
     "build": "gulp minify",
     "start": "node ./bin/www",
+    "dev": "nodemon ./bin/www",
     "devstart": "gulp devstart",
     "prepare": "node .husky/install.mjs"
   },
@@ -34,7 +35,7 @@
     "i18next": "^20.2.1",
     "i18next-fs-backend": "^1.1.1",
     "i18next-http-middleware": "^3.1.1",
-    "mailgun.js": "^3.3.0",
+    "mailgun.js": "^11.1.0",
     "mongoose": "^6.13.5",
     "morgan": "~1.9.1",
     "passport": "^0.7.0",
