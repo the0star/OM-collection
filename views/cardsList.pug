@@ -5,22 +5,10 @@ block scripts
   link(rel="stylesheet" href="/stylesheets/cardsListStyle.css")
   script.
     const PATH = !{JSON.stringify(path)};
-  if path === "hidden"
-    script.
-      let cardList = !{JSON.stringify(cardList)};
-      $(function() {
-        let f = document.getElementById("filter-container");
-        f.style.pointerEvents = "none";
-        f.style.opacity = 0.5;
-        initInfiniteScroll();
-        updateCardCount();
-      });
-  else
-    script.
-      let cardList = [];
-      $(function() {
-        getCards(getFilterQuery());
-      });
+    let cardList = [];
+    $(function() {
+      getCards(getFilterQuery());
+    });
   script(src="/dist/js/cardsListFunctions.js")
   script(src="https://unpkg.com/@webcreate/infinite-ajax-scroll/dist/infinite-ajax-scroll.min.js")
 

@@ -67,7 +67,6 @@ function getCardData() {
         dt: getTreeRewards(),
         skills: getCardSkills(),
         number: $("#number").val(),
-        isHidden: $("#isHidden") ? $("#isHidden").prop("checked") : false,
     };
     if (data.rarity === "UR+") {
         data.animation = $("input[name='animationType']:checked").val();

@@ -31,9 +31,6 @@ router.post(
     cardsController.updateCard
 );
 
-// Make hidden card available to everyone
-// router.get('/:card/makePublic', loginController.hasAccess("Admin"), cardsController.makeCardPublic);
-
 // Delete card
 router.post(
     "/delete",

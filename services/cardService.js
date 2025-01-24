@@ -1,5 +1,4 @@
 const Cards = require("../models/cards");
-const HiddenCards = require("../models/hiddenCards.js");
 const Revisions = require("../models/revisions");
 
 const Sentry = require("@sentry/node");
@@ -17,24 +16,8 @@ exports.aggregateCards = async function (pipeline) {
     return await Cards.aggregate(pipeline);
 };
 
-exports.getHiddenCards = async function () {
-    return await HiddenCards.find().sort({ number: -1 });
-};
-
 exports.getCard = async function (query = {}) {
     return await Cards.findOne(query);
-};
-
-exports.getHiddenCard = async function (cardName, user) {
-    if (!user || !user.isAdmin) {
-        throw createError(404, (properties = { title: "Card not found" }));
-    }
-    return await HiddenCards.findOne({ name: cardName });
-};
-
-exports.isHidden = async function (cardName) {
-    var card = await HiddenCards.findOne({ name: cardName });
-    return Boolean(card);
 };
 
 exports.getGlobalStats = async function (cardType) {
@@ -552,26 +535,18 @@ function getDefaultTree(name, data) {
 
 exports.addNewCard = async function (cardData, creator) {
     try {
-        if (cardData.isHidden == "true") {
-            if (cardData.number === "") {
-                cardData.number =
-                    (await HiddenCards.estimatedDocumentCount()) + 1;
-            }
-            await HiddenCards.create(cardData);
-        } else {
-            if (cardData.number === "") {
-                cardData.number = await getLatestCardNum(cardData.rarity);
-            }
-            cardData.dt = getDefaultTree(cardData.name, cardData);
-            await Cards.create(cardData);
-            await Revisions.create({
-                title: cardData.name,
-                type: "card",
-                user: creator,
-                timestamp: new Date(),
-                data: cardData,
-            });
+        if (cardData.number === "") {
+            cardData.number = await getLatestCardNum(cardData.rarity);
         }
+        cardData.dt = getDefaultTree(cardData.name, cardData);
+        await Cards.create(cardData);
+        await Revisions.create({
+            title: cardData.name,
+            type: "card",
+            user: creator,
+            timestamp: new Date(),
+            data: cardData,
+        });
         return { err: null, message: "Card added!" };
     } catch (err) {
         Sentry.captureException(err);
@@ -580,12 +555,9 @@ exports.addNewCard = async function (cardData, creator) {
 };
 
 exports.deleteCard = async function (cardName) {
-    var card = await Cards.findOneAndRemove({ uniqueName: cardName });
+    const card = await Cards.findOneAndRemove({ uniqueName: cardName });
     if (!card) {
-        card = await HiddenCards.findOneAndRemove({ uniqueName: cardName });
-        if (!card) {
-            return createError(404, (properties = { title: "Card not found" }));
-        }
+        return createError(404, (properties = { title: "Card not found" }));
     }
     return removeCardDependencies(cardName);
 };
@@ -600,13 +572,3 @@ async function removeCardDependencies(cardName) {
             return { success: true };
         });
 }
-
-exports.makeCardPublic = async function (cardName) {
-    var card = await HiddenCards.findOneAndRemove({ uniqueName: cardName });
-    if (!card) {
-        throw createError(404, (properties = { title: "No such card" }));
-    }
-    var newCard = new Cards(card.toObject());
-    newCard.number = await getLatestCardNum(newCard.rarity);
-    return await newCard.save();
-};

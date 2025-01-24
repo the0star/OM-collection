@@ -154,44 +154,34 @@ exports.getFavouriteCardsPage = async function (req, res, next) {
 
 exports.getCardDetailPage = async function (req, res, next) {
     try {
-        var cardData = await cardService.getCard({
+        let cardData = await cardService.getCard({
             name: req.params.card.replace(/_/g, " "),
         });
-        if (!cardData) {
-            return await getHiddenCardDetailPage(req, res, next);
-        }
-
-        var stats = await cardService.getCardStats(
-            req.user,
-            cardData.uniqueName
-        );
-
         cardData.source_link = cardData.source.map((x) =>
             encodeURIComponent(x.replace(/ /g, "_"))
         );
 
-        var title = cardData.name;
-        var lang = req.i18n.t("lang");
-
+        let title = cardData.name;
+        let lang = req.i18n.t("lang");
         if (lang === "ja") {
             if (cardData.ja_name !== "???") {
                 title = cardData.ja_name;
             }
-
             cardData.source = await getSourceInLanguage(cardData.source, "ja");
         }
 
-        // TODO: remove irrelevant nodes?
         let user = req.user;
+        // TODO: remove tree nodes that does not belong to this card.
         if (user) {
             user.tree = (await userService.getUser(user.name)).tree;
         }
+
+        let stats = await cardService.getCardStats(user, cardData.uniqueName);
 
         return res.render("cardDetail", {
             title: title,
             description: `View "${cardData.name}" and other Obey Me cards on Karasu-OS.com`,
             card: cardData,
-            isHidden: false,
             user: user,
             stats: stats,
         });
@@ -231,42 +221,6 @@ async function getSourceInLanguage(sources, lng) {
     }
     return arr;
 }
-
-async function getHiddenCardDetailPage(req, res, next) {
-    var cardName = req.params.card.replace(/_/g, " ");
-    var cardData = await cardService.getHiddenCard(cardName, req.user);
-    if (!cardData) {
-        throw createError(404, (properties = { title: "Card not found" }));
-    }
-    cardData.source_link = cardData.source.map((x) =>
-        encodeURIComponent(x.replace(/ /g, "_"))
-    );
-    return res.render("cardDetail", {
-        title: cardData.name,
-        description: `View "${cardData.name}" and other Obey Me cards on Karasu-OS.com`,
-        card: cardData,
-        isHidden: true,
-        user: req.user,
-    });
-}
-
-exports.getHiddenCardsListPage = async function (req, res, next) {
-    try {
-        let cards = await cardService.getHiddenCards();
-        return res.render("cardsList", {
-            title: "Hidden Cards",
-            user: req.user,
-            cardList: {
-                demon: cards.filter((x) => x.type === "Demon"),
-                memory: cards.filter((x) => x.type === "Memory"),
-            },
-            path: "hidden",
-            query: req.query,
-        });
-    } catch (e) {
-        return next(e);
-    }
-};
 
 exports.getProfilePage = async function (req, res, next) {
     try {
@@ -324,19 +278,6 @@ exports.getAnimationList = async function (req, res, next) {
         Sentry.captureException(e);
         return next(e);
     }
-};
-
-exports.directImage = async function (req, res, next) {
-    var cardName = req.url
-        .substring(1)
-        .replace("_b.jpg", "")
-        .replace(".jpg", "");
-    cardName = cardService.decodeCardName(cardName);
-    var isHidden = await cardService.isHidden(cardName);
-    if (isHidden && (!req.user || !req.user.isAdmin)) {
-        return next(createError(404));
-    }
-    next();
 };
 
 // Collection functions
@@ -582,7 +523,10 @@ exports.getEditCardPage = async function (req, res, next) {
 };
 
 exports.addNewCard = async function (req, res) {
-    var result = await cardService.addNewCard(req.body.cardData, req.user.name);
+    const result = await cardService.addNewCard(
+        req.body.cardData,
+        req.user.name
+    );
     return res.json(result);
 };
 
@@ -618,17 +562,6 @@ exports.deleteCard = async function (req, res) {
     } catch (e) {
         Sentry.captureException(e);
         return res.json({ err: e });
-    }
-};
-
-exports.makeCardPublic = async function (req, res, next) {
-    try {
-        var newCard = await cardService.makeCardPublic(req.params.card);
-        res.redirect("/card/" + cardService.encodeCardName(newCard.name));
-    } catch (e) {
-        console.error(e.message);
-        Sentry.captureException(e);
-        next(e);
     }
 };
 

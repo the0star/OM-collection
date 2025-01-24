@@ -23,11 +23,6 @@ router.get("/closing_notice", miscController.closingNotice);
 // Cards lists
 router.get("/cards/:character", cardController.getCharacterCardPage);
 router.get("/cards", cardController.getCardsListPage);
-router.get(
-    "/hiddenCards",
-    loginController.hasAccess("Admin"),
-    cardController.getHiddenCardsListPage
-);
 router.get("/card_pages", cardController.getCardDirectory);
 
 // Events
