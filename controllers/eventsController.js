@@ -204,16 +204,14 @@ exports.calculate = async function(req, res) {
 }
 */
 
-exports.getEventAddPage = async function (req, res, next) {
+exports.getAddEventPage = async function (req, res, next) {
     try {
-        var data = eventService.getDefaultEventData();
-        var apPresets = await eventService.getAPPresets();
+        const data = eventService.getDefaultEventData();
         return res.render("eventEdit", {
             title: "Add Event",
             description: ":)",
             data: data,
             user: req.user,
-            apPresets: apPresets,
         });
     } catch (e) {
         return next(e);
@@ -222,7 +220,10 @@ exports.getEventAddPage = async function (req, res, next) {
 
 exports.addEvent = async function (req, res) {
     try {
-        var result = await eventService.addEvent(req.body.data, req.user.name);
+        const result = await eventService.addEvent(
+            req.body.data,
+            req.user.name
+        );
         return res.json(result);
     } catch (e) {
         return res.json({ err: true, message: e.message });
@@ -258,7 +259,7 @@ exports.updateEvent = async function (req, res) {
     }
 };
 
-exports.getEventEditPage = async function (req, res, next) {
+exports.getEditEventPage = async function (req, res, next) {
     try {
         let eventName = decodeURIComponent(req.params.event.replace(/_/g, " "));
         let data = await eventService.getEvent({ "name.en": eventName });

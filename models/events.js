@@ -67,12 +67,6 @@ const boxSetSchema = new Schema({
     boxes: [boxSchema],
 });
 
-// var APSchema = new Schema({
-// 	amount: { type: Number, required: true },
-// 	points: { type: Number, required: true },
-// 	page: { type: Number }
-// });
-
 const popQuizSchema = new Schema({
     rewardListType: { type: String, required: true, enum: ["points", "boxes"] },
     hasKeys: { type: Boolean, required: true },
@@ -89,9 +83,6 @@ const popQuizSchema = new Schema({
     boostingMultiplier: { type: Number, required: true },
     boostingStart: { type: Date },
     boostingEnd: { type: Date },
-
-    // pageCost: { type: Number },
-    // ap: { type: [APSchema] }
 });
 
 const PopQuiz = Event.discriminator("PopQuiz", popQuizSchema);
@@ -104,4 +95,3 @@ const LoginBonus = Event.discriminator("LoginBonus", new mongoose.Schema({}));
 const Other = Event.discriminator("Other", new mongoose.Schema({}));
 
 module.exports = Event;
-// exports.APSchema = APSchema;

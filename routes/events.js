@@ -11,12 +11,12 @@ const loginController = require("../controllers/loginController");
 router.get(
     "/new",
     loginController.hasAccess("Moderator"),
-    eventsController.getEventAddPage
+    eventsController.getAddEventPage
 );
 router.get(
     "/:event/edit",
     loginController.canEdit(),
-    eventsController.getEventEditPage
+    eventsController.getEditEventPage
 );
 
 router.post(

@@ -11,7 +11,6 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const Events = require("../models/events");
-const APPresets = require("../models/apPresets");
 const Revisions = require("../models/revisions");
 
 exports.getEvents = async function (condition = {}, sort = { start: -1 }) {
@@ -31,7 +30,7 @@ exports.getLatestEvent = async function (t) {
     return (await Events.find({ type: t }).sort({ start: -1 }).limit(1))[0];
 };
 
-exports.addEvent = async function (data, img, user) {
+exports.addEvent = async function (data, user) {
     try {
         let event = await Events.findOne({ "name.en": data.name.en });
         if (event) {
@@ -128,10 +127,3 @@ exports.getDefaultEventData = function () {
 function stringToDateTime(dateString) {
     return dayjs(dateString).format("YYYY-MM-DDTHH:mm:ss.000+00:00");
 }
-
-exports.getAPPresets = async function () {
-    var apPresets = await APPresets.find({});
-    var apPresetsMap = {};
-    apPresets.forEach((x) => (apPresetsMap[x.name] = x.rewards));
-    return apPresetsMap;
-};

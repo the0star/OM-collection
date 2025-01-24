@@ -1,9 +1,9 @@
 extends layout
 
 block scripts
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+	link(rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css")
 	link(rel="stylesheet" href="/stylesheets/eventEdit.css")
-	<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	script(src="https://code.jquery.com/ui/1.12.1/jquery-ui.js")
 	script(src="https://unpkg.com/imask@6.2.2/dist/imask.min.js")
 	script(src="/dist/js/eventEdit.js")
 
@@ -44,7 +44,7 @@ mixin lockedStageEntry(stage = { name: '', requirement: '' })
 
 block content
 	-
-		var isMod = !card && !user.isAdmin;
+		var isMod = user.type == "Moderator" || user.type == "Admin";
 		function formatStages(stages, delimiter = ", ") {
 			let str = '';
 			stages.forEach(i => {
@@ -139,21 +139,22 @@ block content
 										div.form-group
 											label(for="stages") Number of stages
 											input#stages.form-control(type="number" name="stages" value=data.stages)
-									div.col-12.col-md-3
-										div.form-group
-											label(for="boostingMultiplier") Boosting
-											select#boostingMultiplier.form-control
-												option(value='1' selected=data.boostingMultiplier==1) No boosting
-												option(value='2' selected=data.boostingMultiplier==2) x2 rewards
-												option(value='3' selected=data.boostingMultiplier==3) x3 rewards
-									div.col-12.col-md-3
-										div.form-group
-											label(for="boostingStart") Boosting start (UTC)
-											input#boostingStart.form-control(type="text" name="boostingStart" value=data.boostingStart)
-									div.col-12.col-md-3
-										div.form-group
-											label(for="boostingEnd") Boosting end (UTC)
-											input#boostingEnd.form-control(type="text" name="boostingEnd" value=data.boostingEnd)
+									div.d-none
+										div.col-12.col-md-3
+											div.form-group
+												label(for="boostingMultiplier") Boosting
+												select#boostingMultiplier.form-control
+													option(value='1' selected=data.boostingMultiplier==1) No boosting
+													option(value='2' selected=data.boostingMultiplier==2) x2 rewards
+													option(value='3' selected=data.boostingMultiplier==3) x3 rewards
+										div.col-12.col-md-3
+											div.form-group
+												label(for="boostingStart") Boosting start (UTC)
+												input#boostingStart.form-control(type="text" name="boostingStart" value=data.boostingStart)
+										div.col-12.col-md-3
+											div.form-group
+												label(for="boostingEnd") Boosting end (UTC)
+												input#boostingEnd.form-control(type="text" name="boostingEnd" value=data.boostingEnd)
 								ul.nav.nav-tabs(role="tablist")
 									li.nav-item
 										a#points-tab.nav-link.active(data-toggle="tab" href="#points" role="tab" aria-controls="points" aria-selected="true") Point rewards
