@@ -33,18 +33,20 @@ $(document).ready(function () {
         $("#cookieToast").toast("hide");
     });
 
-    /***/
-    let cookieName = "110724";
+    /**
+     * Alert / Toast Management
+     */
+    let cookieName = "2025";
     if (
         !document.cookie.split("; ").find((row) => row.startsWith(cookieName))
     ) {
-        $("#announcementToast").removeClass("d-none").toast("show"); // if is toast
-        // $("#announcementToast").removeClass("d-none");  // if is alert
+        // $("#announcementToast").removeClass("d-none").toast("show"); // if is toast
+        $("#announcementToast").removeClass("d-none"); // if is alert
     }
     $("#announcementToast .close").on("click", () => {
         document.cookie =
             cookieName + "=true; expires=" + cookieExpiryDate() + ";";
-        $("#announcementToast").toast("hide"); // if is toast
+        // $("#announcementToast").toast("hide"); // if is toast
     });
     /***/
 
