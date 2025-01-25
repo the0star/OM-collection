@@ -1,6 +1,4 @@
 const Sentry = require("@sentry/node");
-const ObjectId = require("mongodb").ObjectID;
-
 const suggestionService = require("../services/suggestionService");
 const Users = require("../models/users.js");
 
@@ -230,12 +228,12 @@ exports.getProfileInfo = async function (username, language) {
         if (language === "en") {
             info.joinKarasu = `${new Intl.DateTimeFormat("en", {
                 month: "long",
-            }).format(ObjectId(user._id).getTimestamp())} ${ObjectId(user._id)
+            }).format(user._id.getTimestamp())} ${user._id
                 .getTimestamp()
                 .getFullYear()}`;
         } else {
-            info.joinKarasu = `${ObjectId(user._id).getTimestamp().getFullYear()}年${
-                ObjectId(user._id).getTimestamp().getMonth() + 1
+            info.joinKarasu = `${user._id.getTimestamp().getFullYear()}年${
+                user._id.getTimestamp().getMonth() + 1
             }月`;
         }
 
@@ -599,15 +597,16 @@ exports.banUser = async function (name) {
 };
 
 exports.updateUserTree = async function (username, node, isUnlocked) {
+    console.log(node);
     if (isUnlocked && isUnlocked == "true") {
         await Users.findOneAndUpdate(
             { "info.name": username },
-            { $addToSet: { tree: new ObjectId(node) } }
+            { $addToSet: { tree: node } }
         );
     } else {
         await Users.findOneAndUpdate(
             { "info.name": username },
-            { $pull: { tree: new ObjectId(node) } }
+            { $pull: { tree: node } }
         );
     }
 };

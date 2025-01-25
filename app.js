@@ -32,14 +32,14 @@ app.set("view engine", "pug");
 
 mongoose.set("strictQuery", true);
 mongoose
-    .connect(process.env.URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
+    .connect(process.env.URI)
     .then(() => {
         cacheService.init();
     })
-    .catch(console.error.bind(console, "MongoDB connection error:"));
+    .catch((err) => console.error(err));
+mongoose.connection.on("error", (err) => {
+    console.error(err);
+});
 
 Sentry.setupExpressErrorHandler(app);
 
