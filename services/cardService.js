@@ -468,7 +468,7 @@ exports.updateCard = async function (data) {
         });
 };
 
-function getDefaultTree(name, data) {
+function getDefaultTree(data) {
     let tree = [];
     const rar = {
         N: 1,
@@ -538,7 +538,7 @@ exports.addNewCard = async function (cardData, creator) {
         if (cardData.number === "") {
             cardData.number = await getLatestCardNum(cardData.rarity);
         }
-        cardData.dt = getDefaultTree(cardData.name, cardData);
+        cardData.dt = getDefaultTree(cardData);
         await Cards.create(cardData);
         await Revisions.create({
             title: cardData.name,

@@ -28,7 +28,7 @@ mixin treeCostTemplate(item)
 							each x in ITEMS
 								option(value=x selected=(i.name===x))= x
 					div.col-md-6.col-lg-4.mb-1.mb-md-0
-						input.form-control(type="number" name="amount" value=i.amount placeholder="how many?")
+						input.form-control(type="number" name="amount" value=i.amount step=5 placeholder="how many?")
 
 mixin treeTemplate(node = { reward: '', type: '', requirements: [], grimmCost: '' })
 	div
@@ -55,7 +55,7 @@ mixin treeTemplate(node = { reward: '', type: '', requirements: [], grimmCost: '
 		if node.reward == '' ? true : false
 			button.btn.btn-outline-secondary.remove-item(type="button") Remove node
 		else
-			small.text-muted Contact admin if you need to remove pre-existing nodes.
+			small.text-muted Contact admin if you need to remove an existing nodes.
 		hr
 
 mixin skillTemplate(skill = { skillType: '', title: '', description: '' })
