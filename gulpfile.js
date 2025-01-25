@@ -3,7 +3,7 @@ const nodemon = require("gulp-nodemon");
 const terser = require("gulp-terser");
 
 function minify() {
-    return src("./public/javascripts/*.js")
+    return src("./public/javascripts/**/*.js")
         .pipe(terser())
         .pipe(dest("./public/dist/js"));
 }
