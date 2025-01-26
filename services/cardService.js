@@ -96,14 +96,6 @@ exports.getGlobalStats = async function (cardType) {
     }
 };
 
-exports.encodeCardName = function (cardName) {
-    return encodeURIComponent(cardName.replace(/ /g, "_"));
-};
-
-exports.decodeCardName = function (cardName) {
-    return decodeURIComponent(cardName.replace(/_/g, " "));
-};
-
 async function getLatestCardNum(rarity) {
     try {
         var query = {};
@@ -134,6 +126,11 @@ exports.getCardStats = async function (user, cardName) {
 };
 
 // TODO rewrite using unwind
+/**
+ *
+ * @param {string} card card unique name
+ * @returns
+ */
 function getCardCounts(card) {
     var pipeline = [
         {
