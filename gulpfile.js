@@ -27,5 +27,5 @@ function devstart(done) {
 }
 
 exports.minify = minify;
-exports.devstart = devstart;
-exports.default = series(minify, devstart);
+exports.devstart = series(minify, devstart);
+exports.default = minify;
