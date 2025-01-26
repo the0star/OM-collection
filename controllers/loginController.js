@@ -19,6 +19,24 @@ const Codes = require("../models/verificationCodes.js");
 const Users = require("../models/users.js");
 const userService = require("../services/userService");
 
+const blacklist = [
+    "card",
+    "user",
+    "cards",
+    "login",
+    "logout",
+    "signup",
+    "collection",
+    "image",
+    "images",
+    "character",
+    "characters",
+    "rankings",
+    "surpriseguest",
+    "userpage",
+    "calculator",
+];
+
 // Helper
 function getUserSessionData(user) {
     return {
@@ -99,31 +117,20 @@ exports.validateSignupInput = async (req, res, next) => {
         return next();
     }
 
-    return next(errors.array());
+    return res.render("signup", {
+        title: "Signup",
+        user: req.user,
+        message: errors.array()[0].msg,
+    });
 };
 
 exports.signup = async (req, res, next) => {
-    let blacklist = [
-        "card",
-        "user",
-        "cards",
-        "login",
-        "logout",
-        "signup",
-        "collection",
-        "image",
-        "images",
-        "character",
-        "characters",
-        "rankings",
-        "surpriseguest",
-        "userpage",
-        "calculator",
-    ];
     if (blacklist.includes(req.body.username.toLowerCase())) {
-        req.flash("message", "Username invalid");
-        res.render("signup", { title: "Signup", user: req.user });
-        return;
+        return res.render("signup", {
+            title: "Signup",
+            user: req.user,
+            message: "Username unavailable",
+        });
     }
     try {
         var exists = await userService.getUser(req.body.username);
@@ -162,18 +169,8 @@ exports.signup = async (req, res, next) => {
 };
 
 exports.signupCheckUsername = async function (req, res) {
-    let blacklist = [
-        "card",
-        "user",
-        "cards",
-        "login",
-        "logout",
-        "signup",
-        "collection",
-    ];
     if (blacklist.includes(req.body.username.toLowerCase())) {
-        res.send(true);
-        return;
+        return res.send(true);
     }
     try {
         var exists = await userService.getUser(req.body.username);

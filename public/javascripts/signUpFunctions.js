@@ -15,7 +15,7 @@ $(document).ready(function () {
         checkConfirmationPassword();
     }
 
-    $("input#username").on("focusout", checkUsername);
+    $("input#username").on("change", checkUsername);
     $("input#password").on("keyup", checkPassword);
     $("input#confirmPassword").on("keyup", checkConfirmationPassword);
     $("button#signUp").on("click", checkSignUp);

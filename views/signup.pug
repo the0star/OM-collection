@@ -11,6 +11,8 @@ block content
         div.card.my-5
           div.card-body
             h5.card-title= t("common.signup")
+            if message && message != ""
+              div(class="alert alert-warning text-center" role="alert" style="z-index:0!important;")= message
             form(class="form-signin" method="POST" action="")
               div.form-label-group
                 input#username.form-control(type="text" name="username" pattern="[A-Za-z0-9._-]+" title="Username can include letters, numbers and ._-" maxlength="50" autocomplete="off" required autofocus)
