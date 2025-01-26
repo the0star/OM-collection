@@ -17,7 +17,7 @@ exports.aggregateCards = async function (pipeline) {
 };
 
 exports.getCard = async function (query = {}) {
-    return await Cards.findOne(query);
+    return await Cards.findOne(query).lean();
 };
 
 exports.getGlobalStats = async function (cardType) {

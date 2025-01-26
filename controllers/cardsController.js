@@ -157,6 +157,11 @@ exports.getCardDetailPage = async function (req, res, next) {
         let cardData = await cardService.getCard({
             name: req.params.card.replace(/_/g, " "),
         });
+
+        if (!cardData) {
+            throw createError(404, (properties = { title: "Card not found" }));
+        }
+
         cardData.source_link = cardData.source.map((x) =>
             encodeURIComponent(x.replace(/ /g, "_"))
         );
