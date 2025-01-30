@@ -97,17 +97,9 @@ function createCardDocuments(data, pageIndex) {
 }
 
 function getCard(name, size, img_src, figcaption, strength) {
-    let s = "s",
-        w = 110,
-        h = 110;
-    if (size == "full-container") {
-        s = "l";
-        w = 180;
-        h = 243;
-    }
     return `
         <a class="cardPreview ${size}" href="/card/${encodeURIComponent(name.replace(/ /g, "_"))}">
-            <img loading="lazy" src="${img_src}?tr=n-gallery_${s}" width=${w} height=${h} alt="${name}" />
+            <img loading="lazy" src="${img_src}?tr=n-gallery_${size == "icon-container" ? "s" : "l"}" alt=""/>
             <figcaption>${figcaption}</figcaption>
             ${strength}
         </a>

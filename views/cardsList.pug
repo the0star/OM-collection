@@ -3,14 +3,6 @@ extends layout
 block scripts
   link(rel="canonical" href="https://" + (t("lang") === "en" ? "" : t("lang") + '.') + "karasu-os.com/cards")
   link(rel="stylesheet" href="/stylesheets/cardsListStyle.css")
-  script.
-    const PATH = !{JSON.stringify(path)};
-    let cardList = [];
-    $(function() {
-      getCards(getFilterQuery());
-    });
-  script(src="/dist/js/cardsListFunctions.js")
-  script(src="https://unpkg.com/@webcreate/infinite-ajax-scroll/dist/infinite-ajax-scroll.min.js")
 
 block content
   div.container
@@ -95,10 +87,10 @@ block content
                 return query.view === t ? " text-primary font-weight-bold" : "";
               }
             div(class="dropdown-menu shadow" aria-labelledby="viewMenuDropdown")
-              a(class="dropdown-item"+isSelectedView("icon") data-viewtype="icon")= t("cards.icon_view")
+              a(class="dropdown-item"+isSelectedView("icon") data-viewtype="icon" href="#")= t("cards.icon_view")
               div(class="dropdown-divider")
-              a(class="dropdown-item"+isSelectedView("original") data-viewtype="original")= t("cards.full_original")
-              a(class="dropdown-item"+isSelectedView("bloomed") data-viewtype="bloomed")= t("cards.full_bloomed")
+              a(class="dropdown-item"+isSelectedView("original") data-viewtype="original" href="#")= t("cards.full_original")
+              a(class="dropdown-item"+isSelectedView("bloomed") data-viewtype="bloomed" href="#")= t("cards.full_bloomed")
           form#search.d-flex.flex-grow-1.mx-sm-2.mb-2.mb-md-0
             div(class="input-group rounded-pill mr-2" style="background-color:rgba(219,158,251,0.2)")
               div.input-group-prepend
@@ -191,10 +183,10 @@ block content
                 | #{t("cards.reset")}
               input.btn.btn-primary(type="submit" style="min-width:100px;" value="Apply")
 
-      ul.nav.nav-pills.nav-fill.shadow.mb-3(style="background:var(--body-bg);border-radius:.25rem;")
-        li.nav-item
+      ul.nav.nav-pills.nav-fill.shadow.mb-3(role="tablist" style="background:var(--body-bg);border-radius:.25rem;")
+        li.nav-item(role="presentation")
           a#demon-tab.nav-link(data-toggle="tab" href="#demoncards" role="tab" aria-controls="demoncards" aria-selected="false") Demon
-        li.nav-item
+        li.nav-item(role="presentation")
           a#memory-tab.nav-link(data-toggle="tab" href="#memorycards" role="tab" aria-controls="memorycards" aria-selected="false") Memory
       div.tab-content
         div#demoncards.tab-pane(role="tabpanel" aria-labelledby="demon-tab")
@@ -220,3 +212,11 @@ block content
                     input(type="text" id="userLink" class="form-control" value=`https://karasu-os.com/${user.name}/favourites` name="userlink" aria-label="user's collection link" aria-describedby="user link" readonly)
                     div.input-group-append
                       button#copyLink.btn.btn-primary(style="border-radius:0 4px 4px 0;")= t("profile.copy")
+  script.
+    const PATH = !{JSON.stringify(path)};
+    let cardList = [];
+    $(function() {
+      getCards(getFilterQuery());
+    });
+  script(src="/dist/js/cardsListFunctions.js")
+  script(src="https://unpkg.com/@webcreate/infinite-ajax-scroll/dist/infinite-ajax-scroll.min.js")
