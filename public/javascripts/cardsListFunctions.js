@@ -96,6 +96,28 @@ function createCardDocuments(data, pageIndex) {
     return { frag: frag, hasNextPage: hasNextPage };
 }
 
+function getCard(name, size, img_src, figcaption, strength) {
+    let s = "s",
+        w = 110,
+        h = 110;
+    if (size == "full-container") {
+        s = "l";
+        w = 180;
+        h = 243;
+    }
+    return `
+        <a class="cardPreview ${size}" href="/card/${encodeURIComponent(name.replace(/ /g, "_"))}">
+            <img loading="lazy" src="${img_src}?tr=n-gallery_${s}" width=${w} height=${h} alt="${name}" />
+            <figcaption>${figcaption}</figcaption>
+            ${strength}
+        </a>
+    `;
+}
+
+function getCardPlaceholder(size) {
+    return `<a class='cardPreview ${size} placeholder'></a>`;
+}
+
 function createCardElement(card) {
     let template, img_src;
     let imageSize = "S",
@@ -106,7 +128,7 @@ function createCardElement(card) {
         containerSize = "full-container";
     }
     if (!card) {
-        template = `<a class='cardPreview ${containerSize} placeholder'></a>`;
+        template = getCardPlaceholder(containerSize);
     } else {
         let bloomed = "";
         let figcaption =
@@ -123,12 +145,13 @@ function createCardElement(card) {
         }
 
         img_src = `/images/cards/${imageSize}/${card.uniqueName}${bloomed}.jpg`;
-        template = `<a class="cardPreview ${containerSize}" href="/card/${encodeURIComponent(card.name.replace(/ /g, "_"))}">
-<img loading="lazy" src="${img_src}">
-<figcaption>${figcaption}</figcaption>
-${strength}
-</a>`;
-        // class="lazy"
+        template = getCard(
+            card.name,
+            containerSize,
+            img_src,
+            figcaption,
+            strength
+        );
     }
 
     let item = document.createElement("div");
@@ -258,7 +281,6 @@ function initInfiniteScroll() {
             }
         });
         ias.next();
-        // ias.on("appended", fadeInImages);
     } else {
         $("#demoncards>p").removeClass("d-none");
         $("#demoncards>.spinner").addClass("d-none");
@@ -284,7 +306,6 @@ function initInfiniteScroll() {
             }
         });
         ias2.next();
-        // ias2.on("appended", fadeInImages);
     } else {
         $("#memorycards>p").removeClass("d-none");
         $("#memorycards>.spinner").addClass("d-none");
@@ -517,10 +538,6 @@ function getRowCapacity() {
         }
     }
 }
-
-// function fadeInImages() {
-// 	$("img.lazy").off("load").on("load", function() { $(this).removeClass("lazy"); });
-// }
 
 function getCardsToSelect(select) {
     let demonTabSelected = $("#demon-tab").hasClass("active");

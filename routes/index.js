@@ -98,7 +98,7 @@ router.use("/images", (req, res, next) => {
     const imgPaths = ["/cards/", "/events/", "/bg/"];
     const match = imgPaths.find((path) => req.path.startsWith(path));
     if (match) {
-        res.redirect(301, `${remoteImgURL}/images${req.path}`);
+        res.redirect(301, `${remoteImgURL}${req.originalUrl}`);
     } else {
         next();
     }

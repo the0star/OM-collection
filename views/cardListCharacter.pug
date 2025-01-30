@@ -1,7 +1,6 @@
 extends layout
 
 block scripts
-  script(src="/dist/js/lazyload.js")
   script(src="https://unpkg.com/vue@3/dist/vue.global.prod.js")
   script.
     const character = !{JSON.stringify(character)};
@@ -82,8 +81,8 @@ block content
               a.card(:href="'/card/' + encodeURIComponent(name.replace(/ /g, '_'))")
                 div.card-body
                   div.d-flex.mb-3
-                    div.w-50.pr-1: img.img-fluid(loading="lazy" :src="'/images/cards/L/' + uniqueName + '.jpg'")
-                    div.w-50.pl-1: img.img-fluid(loading="lazy" :src="'/images/cards/L/' + uniqueName + '_b.jpg'")
+                    div.w-50.pr-1: img.img-fluid(loading="lazy" :src="'/images/cards/L/' + uniqueName + '.jpg?tr=n-gallery_l'" :alt="name")
+                    div.w-50.pl-1: img.img-fluid(loading="lazy" :src="'/images/cards/L/' + uniqueName + '_b.jpg?tr=n-gallery_l'" :alt="name + ' Flower Unlocked'")
                   p.card-text.text-center {{name}}
           div.spinner(v-else) Loading...
           p.text-center.my-5(v-if="!cards.demon.length")= t("cards.no-cards")
@@ -96,10 +95,6 @@ block content
                   p.card-text.text-center {{name}}
           div.spinner(v-else) Loading...
           p.text-center.my-5(v-if="!cards.memory.length")= t("cards.no-cards")
-    div.card.card-body
-      h5.text-center Information
-      p Hi there. This is a work in progress page. Since events info has only been on the website for one year, there are some missing information. We're still trying to figure out how to save permanent nightmares, lessons, charge missions, and other special challenges so they can become a filter too. Help with updating information on this website is very much appreciated!
-
   style.
     .tab-content p {
       display: -webkit-box;
