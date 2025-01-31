@@ -13,7 +13,7 @@ html(lang=t("lang"))
     title= title+t("header")
     meta(name='viewport' content='width=device-width, initial-scale=1')
     meta(name="description" content=description?description:title+t("header"))
-    meta(name="keywords" content="Obey Me, おべいみー, game, wiki, cards, tools, database, 攻略")
+    meta(name="keywords" content="Obey Me, おべいみー, game, wiki, cards, tools, database, 攻略, pop quiz, events, nightmare, surprise guest")
     meta(property="og:title" content=title)
     meta(property="og:description" content=description?description:title+t("header"))
     if card
@@ -21,11 +21,9 @@ html(lang=t("lang"))
     else
       meta(property="og:image" content="/images/karasu.png")
     link(rel="icon" type="image/x-icon" href="/images/favicon.ico")
-    link(rel="stylesheet" href="/stylesheets/bootstrap-reboot.css")
-    link(rel="stylesheet" href="/stylesheets/bootstrap.min.css")
-    link(rel="stylesheet" href="/stylesheets/style.css")
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+    link(rel="stylesheet" href="/dist/css/main/main.css")
+    script(src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous")
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous")
     script(src="/dist/js/commonFunctions.js")
     block scripts
 

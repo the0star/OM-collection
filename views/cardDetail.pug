@@ -1,7 +1,7 @@
 extends layout
 
 block scripts
-  link(rel="stylesheet" href="/stylesheets/cardDetail.css")
+  link(rel="stylesheet" href="/dist/css/cardDetail.css")
   script.
     var i18next = { "collected_count": "#{t("cards.collected_count", { percentage: "undefined" })}", "favourite_count": "!{t("cards.favourite_count", { percentage: "undefined" })}" };
     const CARD_NAME = !{JSON.stringify(card.uniqueName)};
