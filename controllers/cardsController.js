@@ -75,7 +75,6 @@ exports.getOwnedCardsPage = async function (req, res, next) {
             throw createError(404, (properties = { title: "User not found" }));
         }
 
-        let query = formatAggPipeline(req.query, req.i18n.t("lang"));
         var pageParams = {
             description: `${req.params.username}'s Collection on Karasu-OS.com`,
             path: "collection",
@@ -132,7 +131,6 @@ exports.getFavouriteCardsPage = async function (req, res, next) {
             throw createError(404, (properties = { title: "User not found" }));
         }
 
-        let query = formatAggPipeline(req.query, req.i18n.t("lang"));
         var pageParams = {
             description: `${req.params.username}'s favourite Obey Me cards on Karasu-OS.com`,
             path: "fav",
@@ -575,76 +573,70 @@ function escapeSearchString(str) {
     return str.replace(/[.*+?^${}()|[\]\\'"]/g, "\\$&");
 }
 
-// TODO: refactor
 function formatAggPipeline(obj, language = "en") {
-    let query = {};
-    let sum = [];
+    const query = {};
+    const sum = [];
     let sortby, order, sortbyVal;
-    let match, addFields, sort, project, pipeline;
 
-    for (let [key, value] of Object.entries(obj)) {
-        if (value === "") continue;
-        if (["characters", "attribute", "rarity"].includes(key)) {
-            query[key] = { $in: [].concat(value) };
-        } else if (key === "search") {
-            // var lang = i18next.t("lang") === "zh" ? "en" : i18next.t("lang");
-            // query["name."+lang] = new RegExp(value, 'i');
-            value = escapeSearchString(value);
-            if (language === "ja") {
-                query["ja_name"] = new RegExp(value, "i");
-            } else {
-                query["name"] = new RegExp(value, "i");
-            }
-        } else if (key === "sortby") {
-            if (!value.match(/^(min|max|fdt)_(-1|1)$/)) {
-                continue;
-            }
-            let t = value.split("_");
-            sortby = "total";
-            sortbyVal = t[0];
-            order = parseInt(t[1]);
+    for (const [key, value] of Object.entries(obj)) {
+        if (!value) continue;
+        switch (key) {
+            case "characters":
+            case "attribute":
+            case "rarity":
+                query[key] = { $in: [].concat(value) };
+                break;
+
+            case "search":
+                const searchValue = escapeSearchString(value);
+                query[language === "ja" ? "ja_name" : "name"] = new RegExp(
+                    searchValue,
+                    "i"
+                );
+                break;
+
+            case "sortby":
+                if (!/^(min|max|fdt)_(-1|1)$/.test(value)) continue;
+                [sortbyVal, order] = value.split("_");
+                sortby = "total";
+                order = parseInt(order, 10);
+                break;
         }
     }
 
-    ["pride", "greed", "envy", "wrath", "lust", "gluttony", "sloth"].forEach(
-        (attr) => {
-            sum.push(`$strength.${attr}.${sortbyVal}`);
-        }
-    );
+    const attributes = [
+        "pride",
+        "greed",
+        "envy",
+        "wrath",
+        "lust",
+        "gluttony",
+        "sloth",
+    ];
+    sum.push(...attributes.map((attr) => `$strength.${attr}.${sortbyVal}`));
 
-    match = { $match: query };
-
-    addFields = {
-        $addFields: {
-            total: { $sum: sum },
+    const pipeline = [
+        { $match: query },
+        ...(sortby === "total"
+            ? [{ $addFields: { total: { $sum: sum } } }]
+            : []),
+        { $sort: { [sortby || "number"]: order || -1 } },
+        {
+            $project: {
+                name: 1,
+                ja_name: 1,
+                uniqueName: 1,
+                type: 1,
+                total: 1,
+                _id: 0,
+            },
         },
-    };
-
-    sort = { $sort: {} };
-    if (sortby) {
-        sort["$sort"][sortby] = order;
-    }
-    sort["$sort"]["number"] = -1;
-
-    project = {
-        $project: {
-            name: 1,
-            ja_name: 1,
-            uniqueName: 1,
-            type: 1,
-            total: 1,
-        },
-    };
-
-    pipeline = [match];
-    if (sortby === "total") {
-        pipeline.push(addFields);
-    }
-    pipeline.push(sort, project);
+    ];
 
     return pipeline;
 }
 
+// TODO: what is this..?
 function formatPipeline2(query) {
     let pipeline = [
         {
