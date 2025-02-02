@@ -279,7 +279,6 @@ exports.sendVerificationEmail = async function (req, res, next) {
         await mg.messages.create("karasu-os.com", {
             to: [req.body.userData.email],
             from: "Karasu OS <no-reply@karasu-os.com>",
-            "h:Reply-To": "karasu.os.mail@gmail.com",
             subject:
                 req.i18n.t("settings.email_confirmation") + " - Karasu-OS.com",
             template: req.i18n.t("settings.email_template"),
@@ -413,7 +412,6 @@ exports.restorePassword = function (req, res, next) {
             .create("karasu-os.com", {
                 to: [req.body.email],
                 from: "Karasu OS <no-reply@karasu-os.com>",
-                "h:Reply-To": "karasu.os.mail@gmail.com",
                 subject: "Restore password",
                 text: `${req.i18n.t("user.username")}: ${user.info.name}\n${req.i18n.t(
                     "user.password"
