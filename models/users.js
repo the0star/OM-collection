@@ -1,5 +1,4 @@
-var mongoose = require("mongoose");
-
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const badgeSchema = new Schema(
@@ -21,6 +20,7 @@ const userSchema = new Schema({
         },
         email: { type: String },
         supportStatus: { type: [badgeSchema] },
+        lastLogin: { type: Date, default: Date.now },
     },
     profile: {
         name: { type: String },

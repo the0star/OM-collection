@@ -31,7 +31,7 @@ router.get("/calculator/:type", eventsController.getCalculatorPage);
 
 // Account management
 router.get("/login", loginController.getLoginPage);
-router.post("/login", loginController.login);
+router.post("/login", loginController.authenticate, loginController.login);
 router.get("/logout", loginController.isLoggedIn(), loginController.logout);
 router.get("/signup", loginController.getSignupPage);
 router.post(

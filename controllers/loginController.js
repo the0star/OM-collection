@@ -71,11 +71,37 @@ exports.getSignupPage = function (req, res) {
 
 /** */
 
-exports.login = passport.authenticate("local", {
-    successRedirect: "/",
+exports.authenticate = passport.authenticate("local", {
     failureRedirect: "/login",
     failureFlash: true,
 });
+
+exports.login = async function (req, res) {
+    if (req.user) {
+        try {
+            const user = await Users.findById(req.user.id);
+            if (!user) {
+                console.error(
+                    "User not found after successful authentication!"
+                );
+                req.flash("message", "An error occurred during login.");
+                return res.redirect("/login");
+            }
+
+            user.info.lastLogin = new Date();
+            await user.save();
+            return res.redirect("/");
+        } catch (err) {
+            console.error("Error updating lastLogin or finding user:", err);
+            req.flash("message", "An error occurred during login.");
+            return res.redirect("/login");
+        }
+    } else {
+        console.error("req.user is undefined after authentication!");
+        req.flash("message", "An error occurred during login.");
+        return res.redirect("/login");
+    }
+};
 
 exports.logout = function (req, res, next) {
     req.logout(function (err) {
