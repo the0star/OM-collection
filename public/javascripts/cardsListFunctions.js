@@ -171,7 +171,7 @@ function applyFilters(e) {
     updateURL();
 
     $("#demoncards>.ias, #memorycards>.ias").html(
-        "<div class='mx-auto'>Loading...</div>"
+        "<div class='spinner'>Loading...</div>"
     );
     $("#demoncards>p, #memorycards>p").addClass("d-none");
 
