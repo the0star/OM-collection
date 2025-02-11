@@ -311,26 +311,34 @@ function unbindInfiniteScroll() {
 }
 
 function updateFilterParams() {
-    let name = $(this).attr("name");
+    const $this = $(this);
+    const name = $this.attr("name");
 
     if (name === "cards") return;
 
-    let checkedItems = $(`input[name=${name}][type=checkbox]:checked`);
+    const isRadio = $this.attr("type") === "radio";
+    const checkboxes = $(`input[name=${name}][type=checkbox]`);
+    const checkedItems = checkboxes.filter(":checked");
 
-    if ($(this).attr("type") === "radio") {
-        if (name !== "characters") checkedItems.prop("checked", false);
-        else $("#characters label.btn").removeClass("active");
-    } else {
-        if (
-            checkedItems.length === 0 ||
-            checkedItems.length ===
-                $(`input[name=${name}][type=checkbox]`).length
-        ) {
-            $(`input[name=${name}][type=radio]`).prop("checked", true);
-            checkedItems.prop("checked", false);
-        } else {
-            $(`input[name=${name}][type=radio]`).prop("checked", false);
+    if (isRadio) {
+        if (name == "characters") {
+            $("#characters label.btn").removeClass("active");
         }
+        checkedItems.prop("checked", false);
+        return;
+    }
+
+    const allChecked = checkedItems.length === checkboxes.length;
+    const noneChecked = checkedItems.length === 0;
+
+    if (allChecked || noneChecked) {
+        $(`input[name=${name}][type=radio]`).prop("checked", true);
+        checkedItems.prop("checked", false);
+        if (name == "characters") {
+            $("#characters label.btn").removeClass("active");
+        }
+    } else {
+        $(`input[name=${name}][type=radio]`).prop("checked", false);
     }
 }
 
