@@ -435,7 +435,7 @@ function switchCardsVisualState(cardNames = []) {
         let notOwnedCards = $('.cardPreview:not(".placeholder")')
             .filter(function () {
                 return !cardNames.includes(
-                    $("img", this).attr("src").slice(16, -4)
+                    $("img", this).attr("src").split("/")[4].split(".jpg")[0]
                 );
             })
             .toArray();
@@ -464,7 +464,7 @@ function cardClicked(e) {
     e.stopPropagation();
 
     let image = $(this).find("img");
-    let cardName = $("img", this).attr("src").slice(16, -4);
+    let cardName = $("img", this).attr("src").split("/")[4].split(".jpg")[0];
 
     updateChangedCards([cardName], $(image).hasClass("notSelectedCard"));
     $(image).toggleClass("notSelectedCard");
@@ -476,17 +476,20 @@ function switchSelectionAll(select) {
     let cardsToSelect = getCardsToSelect(select);
     if (cardsToSelect.length == 0) return;
 
-    //TODO remove slice
     let visibleCards = $('.cardPreview:visible:not(".placeholder")')
         .filter((idx, el) => $(el).isInViewport())
         .filter((idx, el) =>
-            cardsToSelect.includes($(el).find("img").attr("src").slice(16, -4))
+            cardsToSelect.includes(
+                $(el).find("img").attr("src").split("/")[4].split(".jpg")[0]
+            )
         );
 
     let invisibleCards = $('.cardPreview:visible:not(".placeholder")')
         .filter((idx, el) => !$(el).isInViewport())
         .filter((idx, el) =>
-            cardsToSelect.includes($(el).find("img").attr("src").slice(16, -4))
+            cardsToSelect.includes(
+                $(el).find("img").attr("src").split("/")[4].split(".jpg")[0]
+            )
         );
 
     let changeSelection;
