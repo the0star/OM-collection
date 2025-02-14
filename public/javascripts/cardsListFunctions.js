@@ -27,8 +27,6 @@ const cardOwned = (name) => ownedCards.includes(name);
 const cardSelectionChanged = (name) => name in changedCards;
 //#endregion
 
-// TODO: create a single listener that controls all hover effects for dropdowns.
-
 $(document).ready(function () {
     $("#search, #filters form").on("submit", applyFilters);
     $("#filters form input").change(updateFilterParams);
@@ -164,8 +162,8 @@ function applyFilters(e) {
     e.preventDefault();
 
     // update query string
-    let params = getFilterQuery();
-    if (params === undefined) return;
+    const params = getFilterQuery();
+    if (!params) return;
 
     querystr = new URLSearchParams(params.toString());
     updateURL();
@@ -179,26 +177,28 @@ function applyFilters(e) {
     getCards(params);
 }
 
+/**
+ * @returns {URLSearchParams|null}
+ */
 function getFilterQuery() {
-    let filters = new FormData($("#filters form")[0]);
-    let params = new URLSearchParams();
+    const filters = new FormData($("#filters form")[0]);
+    const params = new URLSearchParams();
 
-    for (let [key, value] of filters.entries()) {
+    for (const [key, value] of filters.entries()) {
         if (value) params.append(key, value);
     }
 
     if (params.get("cards") === "all") params.delete("cards");
 
-    let search = $("input[name='search']").val();
-    if (search) params.set("search", search);
+    const searchInput = $("input[name='search']").val();
+    if (searchInput) params.set("search", searchInput);
 
-    if (querystr.get("view")) params.set("view", querystr.get("view"));
+    if (querystr.has("view")) params.set("view", querystr.get("view"));
 
-    if (
-        cardList.length > 0 &&
-        params.toString() === document.location.search.substring(1)
-    )
-        return;
+    const currentQueryString = document.location.search.substring(1);
+    if (cardList.length > 0 && params.toString() === currentQueryString) {
+        return null;
+    }
 
     return params;
 }
@@ -292,7 +292,7 @@ function initInfiniteScroll() {
             prefill: false,
             spinner: $("#memorycards>.spinner")[0],
         });
-        ias.on("last", function () {
+        ias2.on("last", function () {
             for (let i = 0; i < 9; i++) {
                 $("#memorycards>.ias").append(createCardElement());
             }
