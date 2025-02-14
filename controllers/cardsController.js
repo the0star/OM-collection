@@ -564,6 +564,9 @@ function formatAggPipeline(obj, language = "en") {
         if (!value) continue;
         switch (key) {
             case "characters":
+                query[key] = { $all: [].concat(value) };
+                break;
+
             case "attribute":
             case "rarity":
                 query[key] = { $in: [].concat(value) };
