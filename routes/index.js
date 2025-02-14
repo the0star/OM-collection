@@ -69,18 +69,11 @@ router.post(
 );
 
 // Misc.
-router.get("/getCards", cardController.getCards); // TODO: refactor
-router.get("/getCards2", cardController.getCards2); // TODO: refactor
-// router.get("/animations", cardController.getAnimationList);
+router.get("/getCards", cardController.getCards); // card list page
+router.get("/getCards2", cardController.getCards2); // character card page
 router.get("/getTreeData", cardController.getTreeData);
 router.get("/tree-tracker/rank-up", miscController.getTreeTracker);
 router.get("/tree-tracker", miscController.getTreeTracker);
-router.get("/tree_tracker/rank_up", (req, res) => {
-    res.redirect(301, "/tree-tracker/rank-up");
-});
-router.get("/tree_tracker", (req, res) => {
-    res.redirect(301, "/tree-tracker");
-});
 
 router.post(
     "/update_tree",

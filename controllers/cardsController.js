@@ -265,24 +265,6 @@ exports.getProfilePage = async function (req, res, next) {
     }
 };
 
-exports.getAnimationList = async function (req, res, next) {
-    try {
-        let cards = await cardService.getCards(
-            { rarity: "UR+" },
-            { name: 1, uniqueName: 1, animation: 1 }
-        );
-        return res.render("animationList", {
-            title: "Animations",
-            description: "A list of Obey Me! card animations.",
-            user: req.user,
-            cards: cards,
-        });
-    } catch (e) {
-        Sentry.captureException(e);
-        return next(e);
-    }
-};
-
 // Collection functions
 exports.getCards = async function (req, res) {
     try {
@@ -326,7 +308,7 @@ exports.getCards = async function (req, res) {
         return res.json({ err: true, cards: [], message: e.message });
     }
 };
-// TODO: give getCards more flexibility
+
 exports.getCards2 = async function (req, res) {
     try {
         let pipeline = formatPipeline2(req.query);
