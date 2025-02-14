@@ -88,9 +88,7 @@ router.get("/stories", storyController.getStories);
 router.get("/story/main/:name", storyController.getStory);
 
 router.use("/images", (req, res, next) => {
-    const imgPaths = ["/cards/", "/events/", "/bg/"];
-    const match = imgPaths.find((path) => req.path.startsWith(path));
-    if (match) {
+    if (/^\/(cards\/|events\/|bg\/)/.test(req.path)) {
         res.redirect(301, `${remoteImgURL}${req.originalUrl}`);
     } else {
         next();
