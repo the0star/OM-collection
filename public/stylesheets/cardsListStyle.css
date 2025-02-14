@@ -119,7 +119,7 @@ form#search input::placeholder {
 }
 
 #filters p {
-    text-align: center;
+    align-content: center;
     margin: 0;
 }
 
