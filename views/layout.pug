@@ -123,6 +123,7 @@ html(lang=t("lang"))
               a(class="nav-link" href='/logout')= t("common.logout")
 
     main.mb-5(style="position:relative;")
+      div#alerts(style="position:fixed;right:20px;z-index:1080;")
       //- if title !== "Karasu OS"
       //-   div.container
       //-     <div id="announcementToast" class="d-none alert alert-secondary alert-dismissible fade show" style="z-index:0!important" role="alert">
