@@ -1,5 +1,4 @@
 const createError = require("http-errors");
-const async = require("async");
 const dayjs = require("dayjs");
 const Sentry = require("@sentry/node");
 
@@ -12,23 +11,23 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const eventService = require("../services/eventService");
-const eventCalculatorService = require("../services/eventCalculatorService");
 const cardService = require("../services/cardService");
 const miscController = require("../controllers/miscController");
 
-exports.getEventsPage = async function (req, res, next) {
+exports.getEventsPage = async function (req, res) {
+    const lang = req.i18n.t("lang");
     let events = await eventService.getEvents();
-    events = Array.prototype.flatMap.call(events, (item) => ({
-        name: item.name,
-        type: item.type,
-        isLonelyDevil: item.isLonelyDevil,
-        start: getFormatedDate(item.start, req.i18n.t("lang")),
-        end: getFormatedDate(item.end, req.i18n.t("lang")),
+    events = events.map(({ name, type, isLonelyDevil, start, end }) => ({
+        name,
+        type,
+        isLonelyDevil,
+        start: getFormatedDate(start, lang),
+        end: getFormatedDate(end, lang),
     }));
     return res.render("eventList", {
         title: "Events",
         description:
-            "A list of Obey Me events, including Nightmare and Pop Quizzes.",
+            "A list of all Obey Me events, including Nightmares, Pop Quizzes, Login Bonuses, and Pint-sized Challenges.",
         user: req.user,
         events: events,
     });
@@ -37,15 +36,11 @@ exports.getEventsPage = async function (req, res, next) {
 function getFormatedDate(d, lang) {
     if (!d) return "???";
 
-    var day = d.getDate(),
-        year = d.getFullYear();
-    if (lang === "en") {
-        let month = d.toLocaleString("en", { month: "long" });
-        return `${day} ${month} ${year}`;
-    } else {
-        let month = d.getMonth() + 1;
-        return `${year}年${month}月${day}日`;
-    }
+    const day = d.getDate();
+    const year = d.getFullYear();
+    return lang === "en"
+        ? `${day} ${d.toLocaleString("en", { month: "long" })} ${year}`
+        : `${year}年${d.getMonth() + 1}月${day}日`;
 }
 
 exports.getEventDetail = async function (req, res, next) {

@@ -1,6 +1,5 @@
-var mongoose = require("mongoose");
-
-var Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
 const options = { discriminatorKey: "type" };
 const noID = { _id: false };
@@ -29,8 +28,6 @@ const eventSchema = new Schema(
     options
 );
 
-const Event = mongoose.model("Event", eventSchema);
-
 const rewardSchema = new Schema(
     {
         card: { type: String, required: true },
@@ -39,7 +36,7 @@ const rewardSchema = new Schema(
     noID
 );
 
-const generalReqSchema = new Schema(
+const costScheme = new Schema(
     {
         name: String,
         req: Number,
@@ -55,17 +52,23 @@ const stageSchema = new Schema(
     noID
 );
 
-const boxSchema = new Schema({
-    name: String,
-    itemsCount: Number,
-    specialRewards: [generalReqSchema],
-});
+const boxSchema = new Schema(
+    {
+        name: String,
+        itemsCount: Number,
+        specialRewards: [costScheme],
+    },
+    noID
+);
 
-const boxSetSchema = new Schema({
-    name: { type: String, required: true },
-    cost: Number,
-    boxes: [boxSchema],
-});
+const boxSetSchema = new Schema(
+    {
+        name: { type: String, required: true },
+        cost: { type: Number },
+        boxes: [boxSchema],
+    },
+    noID
+);
 
 const popQuizSchema = new Schema({
     rewardListType: { type: String, required: true, enum: ["points", "boxes"] },
@@ -73,25 +76,19 @@ const popQuizSchema = new Schema({
     isLonelyDevil: { type: Boolean, required: true },
     isBirthday: { type: Boolean, required: true },
 
-    listRewards: { type: [rewardSchema] },
-    boxRewards: { type: [boxSetSchema] },
+    listRewards: [rewardSchema],
+    boxRewards: [boxSetSchema],
 
     stages: { type: Number, required: true },
-    stageList: { type: [stageSchema] },
-    lockedStages: { type: [generalReqSchema] },
+    stageList: [stageSchema],
+    lockedStages: [costScheme],
 
     boostingMultiplier: { type: Number, required: true },
     boostingStart: { type: Date },
     boostingEnd: { type: Date },
 });
 
-const PopQuiz = Event.discriminator("PopQuiz", popQuizSchema);
-const Nightmare = Event.discriminator("Nightmare", new mongoose.Schema({}));
-const ChargeMission = Event.discriminator(
-    "ChargeMission",
-    new mongoose.Schema({})
-);
-const LoginBonus = Event.discriminator("LoginBonus", new mongoose.Schema({}));
-const Other = Event.discriminator("Other", new mongoose.Schema({}));
+const Event = mongoose.model("Event", eventSchema);
+Event.discriminator("PopQuiz", popQuizSchema);
 
 module.exports = Event;

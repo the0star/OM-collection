@@ -23,7 +23,7 @@ exports.getEvents = async function (condition = {}, sort = { start: -1 }) {
 };
 
 exports.getEvent = async function (query = {}) {
-    return await Events.findOne(query);
+    return await Events.findOne(query).lean();
 };
 
 exports.getLatestEvent = async function (t) {

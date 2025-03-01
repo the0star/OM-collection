@@ -103,9 +103,10 @@ function validateFields() {
 }
 
 function prepareEventData() {
-    let data = {};
-    let formData = new FormData(document.getElementById("info"));
-    formData.forEach((value, key) => (data[key] = value));
+    const form = document.getElementById("info");
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
     data.name = {
         en: data["en-name"],
         ja: data["ja-name"],
@@ -113,37 +114,37 @@ function prepareEventData() {
     };
     ["en-name", "ja-name", "zh-name"].forEach((e) => delete data[e]);
 
-    if (data.type === "PopQuiz") {
-        let rewardType = $("input[name='rewardListType']:checked").val();
-        let popQuizData = {
-            rewardListType: rewardType,
-            hasKeys: $("input#has-keys").is(":checked"),
-            isLonelyDevil: $("input#lonelydevil").is(":checked"),
-            isBirthday: $("input#birthday").is(":checked"),
-            boostingMultiplier: parseInt($("#boostingMultiplier").val()),
-            stages: $("input#stages").val(),
-            stageList: getStages(),
-        };
-
-        if (popQuizData.hasKeys) {
-            data.lockedStages = getLockedStages();
-        }
-
-        if (rewardType === "points") {
-            popQuizData.listRewards = getRewards();
-        } else {
-            popQuizData.boxRewards = getBoxRewards();
-        }
-
-        if (popQuizData.boostingMultiplier > 1) {
-            popQuizData.boostingStart = $("#boostingStart").val();
-            popQuizData.boostingEnd = $("#boostingEnd").val();
-        }
-
-        data = Object.assign(popQuizData, data);
+    if (data.type !== "PopQuiz") {
+        return data;
     }
 
-    return data;
+    const rewardType = $("input[name='rewardListType']:checked").val();
+    const popQuizData = {
+        rewardListType: rewardType,
+        hasKeys: $("input#has-keys").is(":checked"),
+        isLonelyDevil: $("input#lonelydevil").is(":checked"),
+        isBirthday: $("input#birthday").is(":checked"),
+        boostingMultiplier: parseInt($("#boostingMultiplier").val()),
+        stages: $("input#stages").val(),
+        stageList: getStages(),
+    };
+
+    if (popQuizData.hasKeys) {
+        popQuizData.lockedStages = getLockedStages();
+    }
+
+    if (rewardType === "points") {
+        popQuizData.listRewards = getRewards();
+    } else {
+        popQuizData.boxRewards = getBoxRewards();
+    }
+
+    if (popQuizData.boostingMultiplier > 1) {
+        popQuizData.boostingStart = $("#boostingStart").val();
+        popQuizData.boostingEnd = $("#boostingEnd").val();
+    }
+
+    return { ...data, ...popQuizData };
 }
 
 function getRewards() {
