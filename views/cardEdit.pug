@@ -176,15 +176,15 @@ block content
 											th(scope="col" style="min-width:128px;") Full devil's tree unlocked
 									tbody
 										each attribute in ["pride", "greed", "envy", "wrath", "lust", "gluttony", "sloth"]
+											- const getValue = (prop) => card && card.strength && card.strength[attribute][prop] ? card.strength[attribute][prop] : 0
 											tr
-												- str = attribute.charAt(0).toUpperCase() + attribute.slice(1);
-												th(scope="row")= t(str)
+												th(scope="row")= t(attribute.charAt(0).toUpperCase() + attribute.slice(1))
 												td
-													input.form-control(type="number" name=attribute value=(card&&card.strength&&card.strength[attribute]?card.strength[attribute].min:0))
+													input.form-control(type="number" name=attribute value=getValue('min'))
 												td
-													input.form-control(type="number" name=attribute value=(card&&card.strength&&card.strength[attribute]?card.strength[attribute].max:0))
+													input.form-control(type="number" name=attribute value=getValue('max'))
 												td
-													input.form-control(type="number" name=attribute value=(card&&card.strength&&card.strength[attribute]?card.strength[attribute].fdt:0))
+													input.form-control(type="number" name=attribute value=getValue('fdt'))
 					div#skills.tab-pane.fade(role="tabpanel" aria-labelledby="skills-tab")
 						div.alert.alert-info(style="z-index:0!important;")
 							strong Important!!
