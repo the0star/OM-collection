@@ -77,49 +77,70 @@ exports.addSuggestion = async function (req, res) {
 };
 
 // NOTE: card search use uniqueName, event search use name.en
-exports.approveSuggestion = async function (req, res) {
+exports.approveSuggestion = async (req, res) => {
     try {
-        let suggestion = await suggestionService.getSuggestion({
+        const suggestion = await suggestionService.getSuggestion({
             _id: req.body._id,
         });
-        let db = suggestion.page.split("/")[1];
-        let docName = decodeURIComponent(suggestion.page.split("/")[2]);
-        let data = JSON.parse(req.body.data);
-
-        if (db === "card") {
-            let verifyTree = await cardController.isVerifiedTreeData(
-                docName,
-                data
-            );
-            if (verifyTree.err) {
-                return res.json({ err: true, message: verifyTree.message });
-            }
-            let result = await cardService.updateCard({
-                user: suggestion.user,
-                originalUniqueName: docName,
-                cardData: data,
-            });
-            if (result.err) throw new Error(result.message);
-        } else if (db === "event") {
-            let result = await eventService.updateEvent(
-                docName.replace(/_/g, " "),
-                data,
-                null,
-                suggestion.user
-            );
-            if (result.err) throw new Error(result.message);
-        } else {
-            return res.json({ err: true, message: "Invalid suggestion path." });
+        if (!suggestion) {
+            return res.json({ err: true, message: "Suggestion not found" });
         }
-        return res.json(
-            await suggestionService.updateSuggestionStatus(
-                req.body._id,
-                "approved",
-                req.body.reason
-            )
+
+        console.log(suggestion);
+
+        const [, db, encodedDocName] = suggestion.page.split("/");
+        const docName = decodeURIComponent(encodedDocName);
+        const data = JSON.parse(req.body.data);
+
+        let updateResult;
+        switch (db) {
+            case "card":
+                const verifyTree = await cardController.isVerifiedTreeData(
+                    docName,
+                    data
+                );
+                if (verifyTree.err) {
+                    return res.json({ err: true, message: verifyTree.message });
+                }
+
+                updateResult = await cardService.updateCard({
+                    user: suggestion.user,
+                    originalUniqueName: docName,
+                    cardData: data,
+                });
+                break;
+
+            case "event":
+                updateResult = await eventService.updateEvent(
+                    docName.replace(/_/g, " "),
+                    data,
+                    suggestion.user
+                );
+                break;
+
+            default:
+                return res.json({
+                    err: true,
+                    message: "Invalid suggestion path",
+                });
+        }
+
+        if (updateResult?.err) {
+            throw new Error(updateResult.message);
+        }
+
+        const statusResult = await suggestionService.updateSuggestionStatus(
+            req.body._id,
+            "approved",
+            req.body.reason
         );
-    } catch (e) {
-        return res.json({ err: true, message: e.message });
+
+        return res.json(statusResult);
+    } catch (error) {
+        return res.json({
+            err: true,
+            message: error.message,
+        });
     }
 };
 

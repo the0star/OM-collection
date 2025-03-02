@@ -4,7 +4,7 @@ const Suggestions = require("../models/suggestions.js");
 
 exports.getSuggestion = async function (query = {}) {
     try {
-        return await Suggestions.findOne(query);
+        return await Suggestions.findOne(query).lean();
     } catch (e) {
         Sentry.captureException(e);
         return [];

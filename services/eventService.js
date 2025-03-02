@@ -55,40 +55,48 @@ exports.addEvent = async function (data, user) {
 
 exports.updateEvent = async function (originalName, data, user) {
     try {
-        data.start = stringToDateTime(data.start);
-        data.end = stringToDateTime(data.end);
+        const updatedData = {
+            ...data,
+            start: stringToDateTime(data.start),
+            end: stringToDateTime(data.end),
+        };
 
-        if (data.boostingMultiplier > 1) {
-            data.boostingStart = stringToDateTime(data.boostingStart);
-            data.boostingEnd = stringToDateTime(data.boostingEnd);
+        if (updatedData.boostingMultiplier > 1) {
+            updatedData.boostingStart = stringToDateTime(data.boostingStart);
+            updatedData.boostingEnd = stringToDateTime(data.boostingEnd);
         }
 
-        let event = await Events.findOne({ "name.en": originalName });
-
+        const event = await Events.findOne({ "name.en": originalName });
         if (!event) {
-            throw createError(
-                404,
-                (properties = {
-                    errorMessage: `Event with name ${originalName} doesn't exist`,
-                })
-            );
+            throw createError(404, {
+                errorMessage: `Event with name ${originalName} doesn't exist`,
+            });
         }
 
-        await Events.replaceOne({ "name.en": originalName }, data);
+        await Promise.all([
+            Events.findOneAndUpdate(
+                { "name.en": originalName },
+                { $set: updatedData }
+            ),
+            Revisions.create({
+                title: updatedData.name.en,
+                type: "event",
+                user,
+                timestamp: new Date(),
+                data: updatedData,
+            }),
+        ]);
 
-        // TODO: make function to create revision; refactor?
-        await Revisions.create({
-            title: data.name.en,
-            type: "event",
-            user: user,
-            timestamp: new Date(),
-            data: data,
-        });
-
-        return { err: null, message: "Event updated!" };
-    } catch (e) {
-        Sentry.captureException(e);
-        return { err: true, message: e.message };
+        return {
+            success: true,
+            message: "Event updated!",
+        };
+    } catch (error) {
+        Sentry.captureException(error);
+        return {
+            success: false,
+            message: error.message,
+        };
     }
 };
 
