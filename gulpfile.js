@@ -1,4 +1,4 @@
-const { series, src, dest } = require("gulp");
+const { series, src, dest, watch } = require("gulp");
 const nodemon = require("gulp-nodemon");
 const terser = require("gulp-terser");
 const cleanCSS = require("gulp-clean-css");
@@ -20,7 +20,6 @@ function devstart(done) {
         script: "./bin/www",
         ext: "pug js css",
         ignore: ["public/dist/*", "gulpfile.js"],
-        tasks: ["minify"],
         done: done,
     });
 
@@ -31,6 +30,9 @@ function devstart(done) {
         .on("crash", function () {
             console.error("\n\nApplication has crashed!\n\n");
         });
+
+    watch("./public/stylesheets/**/*.css", minifyCSS);
+    watch("./public/javascripts/**/*.js", minifyJS);
 }
 
 exports.minify = series(minifyJS, minifyCSS);
