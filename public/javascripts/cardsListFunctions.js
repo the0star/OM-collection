@@ -2,7 +2,6 @@ let changedCards = {};
 let selectionMode = false;
 let ownedCards = [];
 let querystr = new URLSearchParams(document.location.search);
-let nextHandler, nextHandler2, ias, ias2;
 let totalCardCount = {
         demon: "--",
         memory: "--",
@@ -71,18 +70,18 @@ $(window).on("beforeunload", () => {
 function createCardDocuments(data, pageIndex) {
     let frag = document.createDocumentFragment();
     let cardsPerRow = getRowCapacity();
-    let itemsPerPage = 100 - (100 % cardsPerRow);
+    let itemsPerPage = cardsPerRow * 10;
     let totalPages = Math.ceil(data.length / itemsPerPage);
     let offset = pageIndex * itemsPerPage;
-    let maxCardCount = data.length;
-    if (data.length % cardsPerRow !== 0) {
-        maxCardCount += cardsPerRow;
-        maxCardCount -= maxCardCount % cardsPerRow;
-    }
+    let maxCards = data.length;
+    maxCards =
+        maxCards % cardsPerRow === 0
+            ? maxCards
+            : maxCards + cardsPerRow - (maxCards % cardsPerRow);
 
     for (
         let i = offset, len = offset + itemsPerPage;
-        i < len && i < maxCardCount;
+        i < len && i < maxCards;
         i++
     ) {
         let item = createCardElement(data[i]);
@@ -208,11 +207,7 @@ function getCards(query) {
     if (PATH === "fav" || PATH === "collection") {
         query.set("user", window.location.pathname.split("/").at(-2));
     }
-    $.ajax({
-        type: "get",
-        url: "/getCards?" + query.toString(),
-        cache: false,
-    }).done(function (data) {
+    $.get("/getCards?" + query.toString()).done(function (data) {
         if (data.err) {
             showAlert("danger", "Something went wrong");
         }
@@ -254,13 +249,13 @@ function initInfiniteScroll() {
     unbindInfiniteScroll();
 
     if (cardList.demon.length !== 0) {
-        nextHandler = function (pageIndex) {
+        const nextHandler = function (pageIndex) {
             let result = createCardDocuments(cardList.demon, pageIndex);
             return this.append(Array.from(result.frag.childNodes)).then(
                 () => result.hasNextPage
             );
         };
-        ias = new InfiniteAjaxScroll("#demoncards>.ias", {
+        const ias = new InfiniteAjaxScroll("#demoncards>.ias", {
             item: ".cardPreview",
             next: nextHandler,
             logger: false,
@@ -279,13 +274,13 @@ function initInfiniteScroll() {
     }
 
     if (cardList.memory.length !== 0) {
-        nextHandler2 = function (pageIndex) {
+        const nextHandler2 = function (pageIndex) {
             let result = createCardDocuments(cardList.memory, pageIndex);
             return this.append(Array.from(result.frag.childNodes)).then(
                 () => result.hasNextPage
             );
         };
-        ias2 = new InfiniteAjaxScroll("#memorycards>.ias", {
+        const ias2 = new InfiniteAjaxScroll("#memorycards>.ias", {
             item: ".cardPreview",
             next: nextHandler2,
             logger: false,
@@ -305,9 +300,7 @@ function initInfiniteScroll() {
 }
 
 function unbindInfiniteScroll() {
-    if (ias) ias = null;
-    if (ias2) ias2 = null;
-    $("#demoncards>.ias, #memorycards>.ias").html("");
+    $("#demoncards>.ias, #memorycards>.ias").empty();
 }
 
 function updateFilterParams() {
@@ -526,20 +519,22 @@ function updateChangedCards(cards, selected) {
 }
 
 function getRowCapacity() {
-    let cardsInRow;
-    if (
+    const windowWidth = window.innerWidth;
+    const isFullView =
         querystr.get("view") === "original" ||
-        querystr.get("view") === "bloomed"
-    ) {
-        cardsInRow = { 576: 3, 768: 4, 992: 4, 1200: 4, xl: 5 };
-    } else {
-        cardsInRow = { 576: 4, 768: 6, 992: 7, 1200: 7, xl: 9 };
-    }
-    for (let [size, cardCount] of Object.entries(cardsInRow)) {
-        if (size === "xl" || $(window).width() <= size) {
-            return cardCount;
+        querystr.get("view") === "bloomed";
+    const cardsInRow = isFullView
+        ? { 576: 3, 768: 4, 992: 4, 1200: 4, xl: 5 }
+        : { 576: 4, 768: 6, 992: 7, 1200: 7, xl: 9 };
+    const breakpoints = [576, 768, 992, 1200];
+
+    for (const size of breakpoints) {
+        if (windowWidth <= size) {
+            return cardsInRow[size];
         }
     }
+
+    return cardsInRow.xl;
 }
 
 function getCardsToSelect(select) {

@@ -81,8 +81,8 @@ block content
               a.card(:href="'/card/' + encodeURIComponent(name.replace(/ /g, '_'))")
                 div.card-body
                   div.d-flex.mb-3
-                    div.w-50.pr-1: img.img-fluid(loading="lazy" :src="'/images/cards/L/' + uniqueName + '.jpg?tr=n-gallery_l'" :alt="name")
-                    div.w-50.pl-1: img.img-fluid(loading="lazy" :src="'/images/cards/L/' + uniqueName + '_b.jpg?tr=n-gallery_l'" :alt="name + ' Flower Unlocked'")
+                    div.w-50.pr-1: img.img-fluid(loading="lazy" :src="'/images/cards/L/' + uniqueName + '.jpg?tr=n-gallery_l'" width=820 height=1106 :alt="name")
+                    div.w-50.pl-1: img.img-fluid(loading="lazy" :src="'/images/cards/L/' + uniqueName + '_b.jpg?tr=n-gallery_l'" width=820 height=1106 :alt="name + ' Flower Unlocked'")
                   p.card-text.text-center {{name}}
           div.spinner(v-else) Loading...
           p.text-center.my-5(v-if="!cards.demon.length")= t("cards.no-cards")

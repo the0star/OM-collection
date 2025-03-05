@@ -50,7 +50,7 @@ block content
 						each card in cards
 							div.col-md-6.mb-3
 								div(style="border:2px solid rgba(212, 144, 189, .2);border-radius:8px;padding:16px;overflow:auto;")
-									img.mr-3(src="/images/cards/S/" + card.uniqueName + ".jpg" style="width:5em;height:auto;float:left;")
+									a(href="/card/" + getURL(card.name)): img.mr-3(src="/images/cards/S/" + card.uniqueName + ".jpg" style="float:left;" width=96 height=96)
 									div
 										a(href="/card/" + getURL(card.name))= lang === "ja" ? card.ja_name : card.name
 										if event.type === "PopQuiz"
@@ -77,9 +77,9 @@ block content
 					div.row.justify-content-center.mb-4
 						each card in cards.filter(card => card.type === "Demon")
 							div.col-12.col-md-5.mb-3
-								a.d-flex(href="../card/" + getURL(card.name))
-									div.w-50.pr-1: img.img-fluid(src="/images/cards/L/" + card.uniqueName + ".jpg")
-									div.w-50.pl-1: img.img-fluid(src="/images/cards/L/" + card.uniqueName + "_b.jpg")
+								a.d-flex(href="/card/" + getURL(card.name))
+									div.w-50.pr-1: img.img-fluid(src="/images/cards/L/" + card.uniqueName + ".jpg" width=820 height=1106)
+									div.w-50.pl-1: img.img-fluid(src="/images/cards/L/" + card.uniqueName + "_b.jpg" width=820 height=1106)
 
 					//- need to change for Chapter A, M, G
 					if event.type === "PopQuiz" && !event.isBirthday && cards.filter(card => card.type === "Memory").length > 0
@@ -87,8 +87,8 @@ block content
 						div.row.justify-content-center
 							each card in cards.filter(card => card.type === "Memory")
 								div.col-6.col-md-3.mb-3
-									a(href="../" + "card/" + getURL(card.name))
-										img.img-fluid(src="/images/cards/L/" + card.uniqueName + ".jpg")
+									a(href="/card/" + getURL(card.name))
+										img.img-fluid(src="/images/cards/L/" + card.uniqueName + ".jpg" width=820 height=1106)
 
 					if event.type === "PopQuiz"
 						hr
