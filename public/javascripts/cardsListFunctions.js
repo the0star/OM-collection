@@ -167,9 +167,7 @@ function applyFilters(e) {
     querystr = new URLSearchParams(params.toString());
     updateURL();
 
-    $("#demoncards>.ias, #memorycards>.ias").html(
-        "<div class='spinner'>Loading...</div>"
-    );
+    $("#demoncards>.spinner, #memorycards>.spinner").removeClass("d-none");
     $("#demoncards>p, #memorycards>p").addClass("d-none");
 
     // request cards
@@ -190,7 +188,9 @@ function getFilterQuery() {
     if (params.get("cards") === "all") params.delete("cards");
 
     const searchInput = $("input[name='search']").val();
-    if (searchInput) params.set("search", searchInput);
+    if (searchInput && searchInput.trim() !== "") {
+        params.set("search", searchInput);
+    }
 
     if (querystr.has("view")) params.set("view", querystr.get("view"));
 
@@ -222,7 +222,7 @@ function getCards(query) {
 
 function updateURL() {
     window.history.replaceState(
-        null,
+        {},
         "",
         `${window.location.pathname}?${querystr.toString()}`
     );
@@ -255,7 +255,7 @@ function initInfiniteScroll() {
                 () => result.hasNextPage
             );
         };
-        const ias = new InfiniteAjaxScroll("#demoncards>.ias", {
+        window.ias = new InfiniteAjaxScroll("#demoncards>.ias", {
             item: ".cardPreview",
             next: nextHandler,
             logger: false,
@@ -280,7 +280,7 @@ function initInfiniteScroll() {
                 () => result.hasNextPage
             );
         };
-        const ias2 = new InfiniteAjaxScroll("#memorycards>.ias", {
+        window.ias2 = new InfiniteAjaxScroll("#memorycards>.ias", {
             item: ".cardPreview",
             next: nextHandler2,
             logger: false,
