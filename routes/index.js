@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const https = require("https");
 
 const cardController = require("../controllers/cardsController");
 const userController = require("../controllers/userController");
@@ -8,7 +9,8 @@ const eventsController = require("../controllers/eventsController");
 const loginController = require("../controllers/loginController");
 const storyController = require("../controllers/storyController");
 
-const remoteImgURL = process.env.REMOTE_IMG_URL;
+// const remoteImgURL = process.env.REMOTE_IMG_URL;
+const remoteImgURL = process.env.FALLBACK_IMAGE_URL;
 
 // Static pages
 router.get("/", cardController.index);
@@ -89,7 +91,16 @@ router.get("/story/main/:name", storyController.getStory);
 
 router.use("/images", (req, res, next) => {
     if (/^\/(cards\/|events\/|bg\/)/.test(req.path)) {
-        res.redirect(301, `${remoteImgURL}${req.originalUrl}`);
+        https
+            .get(`${remoteImgURL}${req.originalUrl}`, (response) => {
+                res.setHeader("Content-Type", response.headers["content-type"]);
+                response.pipe(res);
+            })
+            .on("error", () => {
+                res.status(500).send("Error fetching image");
+            });
+
+        // return res.redirect(301, `${url}${req.originalUrl}`);
     } else {
         next();
     }
