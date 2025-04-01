@@ -9,8 +9,7 @@ const eventsController = require("../controllers/eventsController");
 const loginController = require("../controllers/loginController");
 const storyController = require("../controllers/storyController");
 
-// const remoteImgURL = process.env.REMOTE_IMG_URL;
-const remoteImgURL = process.env.FALLBACK_IMAGE_URL;
+const remoteImgURL = process.env.REMOTE_IMG_URL;
 
 // Static pages
 router.get("/", cardController.index);
@@ -99,8 +98,6 @@ router.use("/images", (req, res, next) => {
             .on("error", () => {
                 res.status(500).send("Error fetching image");
             });
-
-        // return res.redirect(301, `${url}${req.originalUrl}`);
     } else {
         next();
     }
