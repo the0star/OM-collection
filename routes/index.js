@@ -90,14 +90,7 @@ router.get("/story/main/:name", storyController.getStory);
 
 router.use("/images", (req, res, next) => {
     if (/^\/(cards\/|events\/|bg\/)/.test(req.path)) {
-        https
-            .get(`${remoteImgURL}${req.originalUrl}`, (response) => {
-                res.setHeader("Content-Type", response.headers["content-type"]);
-                response.pipe(res);
-            })
-            .on("error", () => {
-                res.status(500).send("Error fetching image");
-            });
+        res.redirect(`${remoteImgURL}${req.originalUrl}`);
     } else {
         next();
     }
