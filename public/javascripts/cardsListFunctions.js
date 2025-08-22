@@ -69,7 +69,7 @@ $(window).on("beforeunload", () => {
 
 function createCardDocuments(data, pageIndex) {
     let frag = document.createDocumentFragment();
-    let cardsPerRow = getRowCapacity();
+    let cardsPerRow = 9;
     let itemsPerPage = cardsPerRow * 10;
     let totalPages = Math.ceil(data.length / itemsPerPage);
     let offset = pageIndex * itemsPerPage;
@@ -516,25 +516,6 @@ function updateChangedCards(cards, selected) {
             delete changedCards[uniqueName];
         }
     });
-}
-
-function getRowCapacity() {
-    const windowWidth = window.innerWidth;
-    const isFullView =
-        querystr.get("view") === "original" ||
-        querystr.get("view") === "bloomed";
-    const cardsInRow = isFullView
-        ? { 576: 3, 768: 4, 992: 4, 1200: 4, xl: 5 }
-        : { 576: 4, 768: 6, 992: 7, 1200: 7, xl: 9 };
-    const breakpoints = [576, 768, 992, 1200];
-
-    for (const size of breakpoints) {
-        if (windowWidth <= size) {
-            return cardsInRow[size];
-        }
-    }
-
-    return cardsInRow.xl;
 }
 
 function getCardsToSelect(select) {
