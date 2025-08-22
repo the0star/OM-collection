@@ -597,7 +597,7 @@ exports.banUser = async function (name) {
 };
 
 exports.updateUserTree = async function (username, node, isUnlocked) {
-    console.log(node);
+    // console.log(node);
     if (isUnlocked && isUnlocked == "true") {
         await Users.findOneAndUpdate(
             { "info.name": username },
