@@ -1,6 +1,9 @@
 extends layout
 
 block scripts
+  link(rel="alternate" hreflang="en" href="https://karasu-os.com/card/" + encodeURIComponent(card.name.replace(/ /g, "_")))
+  link(rel="alternate" hreflang="ja" href="https://ja.karasu-os.com/card/" + encodeURIComponent(card.name.replace(/ /g, "_")))
+  link(rel="alternate" hreflang="zh" href="https://zh.karasu-os.com/card/" + encodeURIComponent(card.name.replace(/ /g, "_")))
   link(rel="stylesheet" href="/dist/css/cardDetail.css")
   script.
     var i18next = { "collected_count": "#{t("cards.collected_count", { percentage: "undefined" })}", "favourite_count": "!{t("cards.favourite_count", { percentage: "undefined" })}" };

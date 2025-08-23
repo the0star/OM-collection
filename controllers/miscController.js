@@ -33,17 +33,19 @@ exports.surpriseGuest = async function (req, res, next) {
             "Luke",
             "Solomon",
         ];
+
         let character = req.params.character;
         if (character && !c.includes(character))
             return next(createError(404, "Character not found."));
 
-        character = character ? req.i18n.t(character) + req.i18n.t("de") : "";
-
         return res.render("surpriseGuest", {
-            title: character + req.i18n.t("common.spg"),
+            title:
+                (character ? req.i18n.t(character) + req.i18n.t("de") : "") +
+                req.i18n.t("common.spg"),
             description:
                 "An all-in-one guide for Obey Me! surprise guest interactions. Karasu's interactive guide features all characters including the demon brothers and side characters. ... Lucifer, Mammon, Leviathan, Satan, Asmodeus, Beelzebub, Belphegor, Luke, Simeon, Barbatos, Diavolo, Solomon.",
             user: req.user,
+            character: character,
             interactions: await cacheService.getCachedSurpriseGuest(),
         });
     } catch (e) {
