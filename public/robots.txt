@@ -1,5 +1,1 @@
-User-agent: *
-Disallow: */edit
-Disallow: /user
-
 Sitemap: https://karasu-os.com/sitemap.xml

@@ -12,8 +12,8 @@ block scripts
   else
     script.
       $(function() {
-        $(".owned, .faved").on("click", () => {
-          showAlert("warning", "Please log in!");
+        $(".owned, .faved, .custom-control").on("click", () => {
+          showAlert("warning", "Log in to track your cards!");
         });
       });
 
@@ -87,9 +87,14 @@ block content
         div.card-title.d-flex.justify-content-between
           h5.m-0(style="display: table; overflow: hidden;")
             div(style="display: table-cell; vertical-align: middle;") Card Stats
-          div: a.btn.btn-outline-primary.px-3(role="button" href=card.uniqueName+"/edit")
-            | <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mb-1" viewBox="0 0 16 16">   <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>   <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/> </svg>
-            | Edit
+          if user
+            div: a.btn.btn-outline-primary.px-3(role="button" href=card.uniqueName+"/edit")
+              | <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mb-1" viewBox="0 0 16 16">   <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>   <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/> </svg>
+              | Edit
+          else
+            div: a.btn.btn-outline-primary.px-3(role="button" href="/login")
+              | <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mb-1" viewBox="0 0 16 16">   <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>   <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/> </svg>
+              | Log in to edit
         hr
         a.h5(data-toggle="collapse" href="#collapseCardInfo" role="button" aria-expanded=(cookies.collapseCardInfo=="true"?"false":"true") aria-controls="collapseCardInfo")
           span Information
@@ -199,28 +204,36 @@ block content
                     return a.grimmCost - b.grimmCost;
                   });
                 if rewards.length === 0
-                  p.text-center.p-5 Looks like we're missing devil's tree data.
-                    |
-                    |
-                    a(href=card.uniqueName+"/edit") Add missing data!
+                  p.text-center.p-5 Please help us improve this page!
+                    br
+                    if user
+                      a(href=card.uniqueName+"/edit") Add missing data!
+                    else
+                      a(href='/login') Log in
+                      |
+                      | to add missing data.
                 else
                   each i in rewards
                     +dtTemplate(i)
-              p.text-muted.text-center *There might be misnamed rewards (especially icons). Please let us know in our
+              p.text-muted.text-center *Something wrong? Let us know in our
                 |
                 |
                 a(href="https://discord.gg/2GcBgdJ65s") discord server
                 |
-                | so we can fix it. Thank you!
+                | so we can fix it.
               br
               p.section-title Level up
               div.row.justify-content-center
                 - let levelNodes = card.dt.filter(x => x.type === "level_up" || x.type === "flower");
                 if levelNodes.length === 0
-                  p.text-center.p-5 Looks like we're missing devil's tree data.
-                    |
-                    |
-                    a(href=card.uniqueName+"/edit") Add missing data!
+                  p.text-center.p-5 Please help us improve this page!
+                    br
+                    if user
+                      a(href=card.uniqueName+"/edit") Add missing data!
+                    else
+                      a(href='/login') Log in
+                      |
+                      | to add missing data.
                 else
                   each i in levelNodes
                     +dtTemplate(i)
@@ -229,25 +242,6 @@ block content
               |
               |
               a(href=card.uniqueName+"/edit") Add missing data!
-        //-
-          if card.rarity == "UR+"
-            a.h5(data-toggle="collapse" href="#collapseAnimations" role="button" aria-expanded=(cookies.collapseAnimations=="true"?"false":"true") aria-controls="collapseAnimations")
-              if card.animation == "homescreen"
-                span Moving Pictures
-              if card.animation == "battle"
-                span Skill Animation
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up mb-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/></svg>
-            div#collapseAnimations.collapse(class=(cookies.collapseAnimations=="true"?"":"show"))
-              if card.animation == "homescreen"
-                div.row
-                  div.col-12.col-md-6.mb-3
-                    img.img-fluid(src="/images/animations/" + card.name + ".png")
-                  div.col-12.col-md-6
-                    img.img-fluid(src="/images/animations/" + card.name + "_b.png")
-              if card.animation == "battle"
-                video(width="320" height="200" controls)
-                  source(src="/images/animations/" + card.name + ".mp4" type="video/mp4")
-                  | Your browser does not support mp4.
 
   script.
     $("a[data-toggle='collapse']").click(function() {
