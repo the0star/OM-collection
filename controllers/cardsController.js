@@ -152,12 +152,11 @@ exports.getFavouriteCardsPage = async function (req, res, next) {
 
 exports.getCardDetailPage = async function (req, res, next) {
     try {
-        let cardData = await cardService.getCard({
-            name: req.params.card.replace(/_/g, " "),
-        });
+        const cardName = req.params.card.replace(/_/g, " ");
+        const cardData = await cardService.getCard({ name: cardName });
 
         if (!cardData) {
-            throw createError(404, (properties = { title: "Card not found" }));
+            throw createError(404, { title: "Card not found" });
         }
 
         cardData.source_link = cardData.source.map((x) =>
@@ -165,12 +164,12 @@ exports.getCardDetailPage = async function (req, res, next) {
         );
 
         let title = cardData.name;
-        let lang = req.i18n.t("lang");
+        const lang = req.i18n.t("lang");
         if (lang === "ja") {
             if (cardData.ja_name !== "???") {
                 title = cardData.ja_name;
             }
-            cardData.source = await getSourceInLanguage(cardData.source, "ja");
+            cardData.source = await getEventNames_JA(cardData.source);
         }
 
         let user = req.user;
@@ -179,49 +178,54 @@ exports.getCardDetailPage = async function (req, res, next) {
             user.tree = (await userService.getUser(user.name)).tree;
         }
 
-        let stats = await cardService.getCardStats(user, cardData.uniqueName);
+        const stats = await cardService.getCardStats(user, cardData.uniqueName);
 
         return res.render("cardDetail", {
             title: title,
             description: `View "${cardData.name}" and other Obey Me cards on Karasu-OS.com`,
             card: cardData,
-            user: user,
-            stats: stats,
+            user,
+            stats,
         });
     } catch (e) {
         return next(e);
     }
 };
 
-async function getSourceInLanguage(sources, lng) {
-    var arr = [];
+async function getEventNames_JA(sources) {
+    const arr = [];
+    const permanent_gacha = {
+        "Chapter M": "Mの章",
+        "Chapter A": "Aの章",
+        "Chapter G": "Gの章",
+    };
+
     for (const source of sources) {
-        // temporary exceptions
-        switch (source) {
-            case "Chapter M":
-                arr.push("Mの章");
-                break;
-            case "Chapter A":
-                arr.push("Aの章");
-                break;
-            case "Chapter G":
-                arr.push("Gの章");
-                break;
-            default: {
-                let relatedEvent = await eventService.getEvent({
-                    "name.en": source,
-                });
-                if (!relatedEvent) {
-                    arr.push(source);
-                } else if (
-                    relatedEvent.name[lng] !== "???" &&
-                    relatedEvent.name[lng] !== ""
-                ) {
-                    arr.push(relatedEvent.name.ja);
-                }
+        if (permanent_gacha[source]) {
+            arr.push(permanent_gacha[source]);
+            continue;
+        }
+
+        try {
+            const relatedEvent = await eventService.getEvent({
+                "name.en": source,
+            });
+            if (
+                relatedEvent &&
+                relatedEvent.name?.ja &&
+                relatedEvent.name.ja !== "???" &&
+                relatedEvent.name.ja.trim() !== ""
+            ) {
+                arr.push(relatedEvent.name.ja);
+            } else {
+                arr.push(source);
             }
+        } catch (err) {
+            console.error(`Failed to fetch event for source: ${source}`, err);
+            arr.push(source);
         }
     }
+
     return arr;
 }
 
