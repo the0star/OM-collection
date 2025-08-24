@@ -597,14 +597,13 @@ exports.banUser = async function (name) {
 };
 
 exports.updateUserTree = async function (username, node, isUnlocked) {
-    // console.log(node);
-    if (isUnlocked && isUnlocked == "true") {
-        await Users.findOneAndUpdate(
+    if (isUnlocked === true || isUnlocked === "true") {
+        return await Users.findOneAndUpdate(
             { "info.name": username },
             { $addToSet: { tree: node } }
         );
     } else {
-        await Users.findOneAndUpdate(
+        return await Users.findOneAndUpdate(
             { "info.name": username },
             { $pull: { tree: node } }
         );

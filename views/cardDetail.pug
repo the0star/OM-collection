@@ -103,32 +103,28 @@ block content
           span Information
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up mb-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/></svg>
         div#collapseCardInfo.collapse(class=(cookies.collapseCardInfo=="true"?"":"show"))
-          div#info.d-flex.flex-wrap
-            div.col-12.col-md-2
-              span= t("cards.type")
-            div.col-12.col-md-4
-              span= t("cards."+card.type)
-            div.col-12.col-md-2
-              span= t("cards.rarity")
-            div.col-12.col-md-4
-              a(href="/cards?rarity="+encodeURIComponent(card.rarity))= card.rarity
-            div.col-12.col-md-2
-              span= t("cards.attribute")
-            div.col-12.col-md-4
-              a(href="/cards?attribute="+card.attribute)= t(card.attribute)
-            div.col-12.col-md-2
-              span= card.characters.length>1?t("cards.characters"):t("cards.character")
-            div.col-12.col-md-4
+          .container: dl.row
+            dt.col-12.col-md-2.mb-2: span= t("cards.type")
+            dd.col-12.col-md-4.text-center.text-md-left: span= t("cards."+card.type)
+
+            dt.col-12.col-md-2.mb-2: span= t("cards.rarity")
+            dd.col-12.col-md-4.text-center.text-md-left: span: a(href="/cards?rarity="+encodeURIComponent(card.rarity))= card.rarity
+
+            dt.col-12.col-md-2.mb-2: span= t("cards.attribute")
+            dd.col-12.col-md-4.text-center.text-md-left: span: a(href="/cards?attribute="+card.attribute)= t(card.attribute)
+
+            dt.col-12.col-md-2.mb-2: span= card.characters.length>1?t("cards.characters"):t("cards.character")
+            dd.col-12.col-md-4.text-center.text-md-left
               each val, index in card.characters
-                a(href=(val === "Little D" ? "/cards?characters=LittleD" : "/cards/"+val))= t(val)
+                span: a(href=(val === "Little D" ? "/cards?characters=LittleD" : "/cards/"+val))= t(val)
                 if index < card.characters.length - 1
                   | ,
                   |
-            div.col-12.col-md-auto.col-lg-2
-              span= t("cards.source")
-            div.col-12.col-md-auto
+
+            dt.col-12.col-md-2.mb-2.text-truncate: span= t("cards.source")
+            dd.col-12.col-md-auto.text-center.text-md-left
               each val, index in card.source
-                a(href="/event/"+card.source_link[index])= val
+                span: a(href="/event/"+card.source_link[index])= val
                 if index < card.source.length - 1
                   | ,
                   |
