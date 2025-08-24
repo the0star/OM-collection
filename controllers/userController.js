@@ -169,10 +169,15 @@ exports.updateUserProfile = async function (req, res) {
 };
 
 exports.updateUserTree = async function (req, res) {
-    await userService.updateUserTree(
+    const result = await userService.updateUserTree(
         req.user.name,
         req.body.node,
         req.body.isUnlocked
     );
+    if (result == null) {
+        return res.json({
+            err: { message: "Something went wrong." },
+        });
+    }
     return res.json({ err: null });
 };

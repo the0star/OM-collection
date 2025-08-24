@@ -73,7 +73,6 @@ router.post(
 router.get("/getCards", cardController.getCards); // card list page
 router.get("/getCards2", cardController.getCards2); // character card page
 router.get("/getTreeData", cardController.getTreeData);
-router.get("/tree-tracker/rank-up", miscController.getTreeTracker);
 router.get("/tree-tracker", miscController.getTreeTracker);
 
 router.post(

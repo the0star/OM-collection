@@ -77,19 +77,13 @@ exports.notifyAdmin = function (message) {
 };
 
 exports.getTreeTracker = async function (req, res, next) {
-    try {
-        let title = "Devil's Tree Tracker";
-        if (req.path === "/tree-tracker/rank-up") title += ": Rank Ups";
-        return res.render("treeTracker", {
-            title: title,
-            description:
-                "Obey Me Devil's Tree Tracking page that lists all devil's tree rewards, including devil points, demon vouchers, chat, icons, rank ups, and everything that you can get from the devil's tree.",
-            path: req.path,
-            user: req.user,
-        });
-    } catch (e) {
-        return next(e);
-    }
+    return res.render("treeTracker", {
+        title: "Devil's Tree Tracker",
+        description:
+            "Obey Me Devil's Tree Tracking page that lists all devil's tree rewards, including devil points, demon vouchers, chat, icons, rank ups, and everything that you can get from the devil's tree.",
+        path: req.path,
+        user: req.user,
+    });
 };
 
 exports.getTeamBuilder = function (req, res, next) {
