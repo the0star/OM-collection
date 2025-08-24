@@ -324,159 +324,100 @@ exports.getCards2 = async function (req, res) {
     }
 };
 
-function getNodeData(card, cost) {
-    if (card.nodes.length === 0) return "?";
-    let node = card.nodes.find(
-        (x) => x.grimmCost == cost && x.type != "level_up" && x.type != "flower"
-    );
-    // TODO: add exceptions
-    if (card.rarity === "N" && cost > 2000) return "--";
-    if (card.rarity === "R" && cost > 4500) return "--";
-    if (card.rarity === "SR" && cost > 6000) return "--";
-    if (card.rarity === "SSR" && cost > 15000) return "--";
-    if (node) {
-        let str = "<div style='position:relative;'>";
-        if (node.unlocked) {
-            str += '<div class="unlocked"></div>';
-        }
-        if (node.type === "icon") {
-            if (card.type === "Demon") {
-                let unlocked = "";
-                if (node.reward.indexOf("(Unlocked)") !== -1) {
-                    unlocked = "_Unlocked";
-                }
-                str += `<img src="https://obey-me.fandom.com/wiki/Special:Redirect/file/${card.name.replace(
-                    /:/g,
-                    " -"
-                )}${unlocked}_icon.png?width=32" onerror="this.src='/images/tree_rewards/${
-                    node.type
-                }.png'" alt="${node.reward}" style="width:2em;height:2em;">`;
-            } else {
-                // check wrong names
-                if (
-                    !node.reward.startsWith(card.name) ||
-                    !node.reward.endsWith(")")
-                ) {
-                    str += `<img src="/images/tree_rewards/${node.type}.png" alt="${node.reward}" style="width:2em;height:2em;">`;
-                } else {
-                    let charNum =
-                        "_" +
-                        (card.characters.indexOf(
-                            node.reward.substring(
-                                node.reward.lastIndexOf("(") + 1,
-                                node.reward.length - 1
-                            )
-                        ) +
-                            1);
-                    str += `<img src="https://obey-me.fandom.com/wiki/Special:Redirect/file/${card.name.replace(
-                        /:/g,
-                        " -"
-                    )}${charNum}_icon.png?width=64" onerror="this.src='/images/tree_rewards/${
-                        node.type
-                    }.png'" alt="${node.reward}" style="width:2em;height:2em;">`;
-                }
-            }
-        } else {
-            str += `<img src="/images/tree_rewards/${node.type}.png" alt="${node.reward}" style="width:2em;height:2em;">`;
-        }
-        return str + "</div>";
-    }
-    return "?";
-}
-
-function getRankUpNodeData(card, level) {
-    if (card.nodes.length === 0) return "?";
-    let node = card.nodes.find((x) => x.reward.startsWith(level));
-
-    if (level !== "Devil's Flower") {
-        level = parseInt(level.substring(3, 5));
-        if (card.rarity === "N" && level > 10) return "--";
-        if (card.rarity === "R" && level > 20) return "--";
-        if (card.rarity === "SR" && level > 30) return "--";
-        if (card.rarity === "SSR" && level > 40) return "--";
-    }
-
-    if (node) {
-        let str = "<div style='position:relative;'>";
-        if (node.unlocked) {
-            str += '<div class="unlocked"></div>';
-        }
-        str += `<img src="/images/nodes/${node.type}.png" style="width:2em;height:2em;">`;
-        return str + "</div>";
-    }
-
-    return "?";
-}
-
-exports.getTreeData = async function (req, res, next) {
+exports.getTreeData = async function (req, res) {
     try {
-        let sort = {};
-        if (req.query.name) {
-            sort["name"] = parseInt(req.query.name) === 0 ? -1 : 1;
+        const { type, character, rarity, attribute, reward } = req.query;
+
+        if (!req.user) {
+            return res.status(400).json({ error: "Log in required" });
+        }
+
+        // 1. Get user data
+        const user = await userService.getUser(req.user.name);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const userRewards = new Set(user.tree.map((id) => id.toString()));
+
+        // 2. Build query for cards
+        const pipeline = [
+            {
+                $match: {
+                    type,
+                    characters: character,
+                },
+            },
+        ];
+
+        if (rarity === "UR") {
+            pipeline.push({ $match: { rarity: { $in: ["UR", "UR+"] } } });
         } else {
-            sort["number"] = -1;
+            pipeline.push({ $match: { rarity } });
+        }
+        if (attribute && attribute !== "All") {
+            pipeline.push({ $match: { attribute } });
+        }
+        if (reward && reward !== "All") {
+            pipeline.push({ $match: { "dt.reward": reward } });
         }
 
-        let keywords = "";
-        if (req.query.filter.length > 0) {
-            keywords = req.query.filter[0];
-        }
-
-        let match = { name: { $regex: keywords, $options: "i" } };
-        if (req.query.rarity && req.query.rarity !== "All") {
-            match["rarity"] = req.query.rarity;
-        }
-        if (req.query.attribute && req.query.attribute !== "All") {
-            match["attribute"] = req.query.attribute;
-        }
-        if (req.query.type && req.query.type !== "All") {
-            match["type"] = req.query.type;
-        }
-
-        let username = req.user ? req.user.name : "KarasuOS";
-        let cards = await userService.getTreeTrackData({
-            username: username,
-            pageNum: req.query.page,
-            sort: sort,
-            match: match,
+        pipeline.push({
+            $project: {
+                name: 1,
+                uniqueName: 1,
+                ja_name: 1,
+                dt: {
+                    $map: {
+                        input: {
+                            $filter: {
+                                input: "$dt",
+                                as: "r",
+                                cond: {
+                                    $not: {
+                                        $in: [
+                                            "$$r.type",
+                                            ["level_up", "flower"],
+                                        ],
+                                    },
+                                },
+                            },
+                        },
+                        as: "r",
+                        in: {
+                            _id: "$$r._id",
+                            name: "$$r.reward",
+                            type: "$$r.type",
+                            cost: "$$r.grimmCost",
+                        },
+                    },
+                },
+            },
+        });
+        pipeline.push({
+            $sort: {
+                name: 1,
+            },
         });
 
-        let rows = [],
-            td;
-        let isRankUp = req.query.path === "/tree-tracker/rank-up";
-        let headers = isRankUp
-            ? ["Lv.10", "Lv.20", "Lv.30", "Lv.40", "Lv.50", "Devil's Flower"]
-            : [2000, 3000, 4500, 6000, 8000, 10000, 15000, 20000];
+        // 3. Get cards
+        const cards = await cardService.aggregateCards(pipeline);
+        const annotatedCards = cards.map((card) => ({
+            ...card,
+            owned: user.cards.owned.includes(card.uniqueName),
+            dt: card.dt
+                .map((r) => ({
+                    ...r,
+                    owned: userRewards.has(r._id.toString()),
+                }))
+                .sort((a, b) => a.cost - b.cost),
+        }));
 
-        cards.forEach((card, i) => {
-            td = [
-                `<a href="/card/${encodeURIComponent(
-                    card.name.replace(/ /g, "_")
-                )}"><img class="mr-2" src="/images/cards/S/${
-                    card._id
-                }.jpg" style="float:left;width:2em;height:2em;">${
-                    req.lang === "ja" ? card.ja_name : card.name
-                }</a>`,
-            ];
-            headers.forEach((i) => {
-                if (isRankUp) {
-                    td.push(getRankUpNodeData(card, i));
-                } else {
-                    td.push(getNodeData(card, i));
-                }
-            });
-            rows.push(td);
-        });
-        headers.unshift("Name");
-
-        return res.json({
-            total_rows: cards.length === 0 ? 0 : cards[0].totalCount,
-            rows: rows,
-            headers: headers,
-        });
+        return res.json(annotatedCards);
     } catch (e) {
+        console.error(e);
         Sentry.captureException(e);
-        return res.json({ err: true, message: e.message });
+        return res.status(500).json({ error: "Server error" });
     }
 };
 

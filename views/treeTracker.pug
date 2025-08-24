@@ -1,84 +1,251 @@
 extends layout
 
 block scripts
-  //- script(src="/dist/js/treeTracker.js")
+  script(src="https://unpkg.com/vue@3/dist/vue.global.js")
 
 block content
-  div.container
+  div#app.container
     h1= title
     div.card
       div.card-body
-        //- p.card-text Types: <a href="/tree-tracker">Rewards</a> / <a href="/tree-tracker/rank-up">Rank Ups</a>
-        p.card-text Devil's tree tracking made easy! Simply click to add or remove an item. This page only shows cards you own.
+        h5.card-title Quick Tips
+        p.card-text Devil's tree tracking made easy! Simply click to add or remove an item. Changes are saved automatically.
+        p.card-text Can't find a card with a wanted item? Head to
+          |
+          |
+          a(href="/ask/items") Devil's Tree Rewards' page
+          |
+          | for a list of cards with specific items.
+        p.card-text
+          <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
+            <path fill="#c8e6c9" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z"></path><path fill="#4caf50" d="M34.586,14.586l-13.57,13.586l-5.602-5.586l-2.828,2.828l8.434,8.414l16.395-16.414L34.586,14.586z"></path>
+          </svg>
+          |
+          | means you've added the card to your collection.
+        p.card-text
+          <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
+            <path fill="#424242" d="M24,4c-5.5,0-10,4.5-10,10v4h4v-4c0-3.3,2.7-6,6-6s6,2.7,6,6v4h4v-4C34,8.5,29.5,4,24,4z"></path><path fill="#FB8C00" d="M36,44H12c-2.2,0-4-1.8-4-4V22c0-2.2,1.8-4,4-4h24c2.2,0,4,1.8,4,4v18C40,42.2,38.2,44,36,44z"></path><path fill="#C76E00" d="M24 28A3 3 0 1 0 24 34A3 3 0 1 0 24 28Z"></path>
+          </svg>
+          |
+          | means the card is not in your collection. You can click on the card name to go to the card's page and add it to your collection.
+        p.card-text Scroll to the bottom of the page for more tips and info!
         hr
         form#filters
           h5= t("cards.type")
           div.custom-control.custom-radio.custom-control-inline
-            input#demon.custom-control-input(type="radio" name="type" value="Demon" checked)
+            input#demon.custom-control-input(type="radio" name="type" value="Demon" v-model="type" checked)
             label.custom-control-label(for="demon")= t("cards.Demon")
           div.custom-control.custom-radio.custom-control-inline
-            input#memory.custom-control-input(type="radio" name="type" value="Memory")
+            input#memory.custom-control-input(type="radio" name="type" value="Memory" v-model="type")
             label.custom-control-label(for="memory")= t("cards.Memory")
 
           h5.mt-3= t("cards.character")
           .d-flex.flex-wrap.align-items-center
             div.btn-group-toggle(data-toggle="buttons")
               label.btn(for="Lucifer")
-                input(type="radio" name="character" id="Lucifer" value="Lucifer" checked)
+                input(type="radio" name="character" id="Lucifer" value="Lucifer" v-model="character" checked)
                 img(src="/images/faces/Lucifer.png" width=32 height=32 alt=t("Lucifer"))
 
             each c in ["Mammon", "Leviathan", "Satan", "Asmodeus", "Beelzebub", "Belphegor", "Diavolo", "Barbatos", "Simeon", "Luke", "Solomon", "Thirteen", "Mephistopheles", "Raphael", "LittleD"]
               div.btn-group-toggle(data-toggle="buttons")
                 label.btn(for=c)
-                  input(type="radio" name="character" id=c value=c)
+                  input(type="radio" name="character" id=c value=c v-model="character")
                   img(src="/images/faces/"+c+".png" width=32 height=32 alt=t(c))
 
           h5.mt-3= t("cards.rarity")
           div.custom-control.custom-radio.custom-control-inline
-            input#id1.custom-control-input(type="radio" name="rarity" value="UR+" checked)
-            label.custom-control-label(for="id1") UR+
+            input#r5.custom-control-input(type="radio" name="rarity" value="UR" v-model="rarity" checked)
+            label.custom-control-label(for="r5") UR/UR+
           div.custom-control.custom-radio.custom-control-inline
-            input#id2.custom-control-input(type="radio" name="rarity" value="UR")
-            label.custom-control-label(for="id2") UR
+            input#r4.custom-control-input(type="radio" name="rarity" value="SSR" v-model="rarity")
+            label.custom-control-label(for="r4") SSR
           div.custom-control.custom-radio.custom-control-inline
-            input#id3.custom-control-input(type="radio" name="rarity" value="SSR")
-            label.custom-control-label(for="id3") SSR
+            input#r3.custom-control-input(type="radio" name="rarity" value="SR" v-model="rarity")
+            label.custom-control-label(for="r3") SR
           div.custom-control.custom-radio.custom-control-inline
-            input#id4.custom-control-input(type="radio" name="rarity" value="SR")
-            label.custom-control-label(for="id4") SR
+            input#r2.custom-control-input(type="radio" name="rarity" value="R" v-model="rarity")
+            label.custom-control-label(for="r2") R
           div.custom-control.custom-radio.custom-control-inline
-            input#id5.custom-control-input(type="radio" name="rarity" value="R")
-            label.custom-control-label(for="id5") R
-          div.custom-control.custom-radio.custom-control-inline
-            input#id6.custom-control-input(type="radio" name="rarity" value="N")
-            label.custom-control-label(for="id6") N
+            input#r1.custom-control-input(type="radio" name="rarity" value="N" v-model="rarity")
+            label.custom-control-label(for="r1") N
 
           h5.mt-3= t("cards.attribute")
           div.custom-control.custom-radio.custom-control-inline
-            input#attribute.custom-control-input(type="radio" name="attribute" value="All" checked)
+            input#attribute.custom-control-input(type="radio" name="attribute" value="All" v-model="attribute" checked)
             label.custom-control-label(for="attribute") All
           each attribute in ["Pride", "Greed", "Envy", "Wrath", "Lust", "Gluttony", "Sloth"]
             div.custom-control.custom-radio.custom-control-inline
-              input.custom-control-input(id=attribute type="radio" name="attribute" value=attribute)
+              input.custom-control-input(id=attribute type="radio" name="attribute" value=attribute v-model="attribute")
               label.custom-control-label(for=attribute)= t(attribute)
 
           include dict/itemList2.pug
           h5.mt-3 Special items
           div.custom-control.custom-radio.custom-control-inline
-            input#attribute.custom-control-input(type="radio" name="reward" value="All" checked)
+            input#reward.custom-control-input(type="radio" name="reward" value="All" v-model="reward" checked)
             label.custom-control-label(for="reward") All
           .d-flex.flex-wrap.align-items-center
             each item in itemList.slice(0, -3)
               div.btn-group-toggle(data-toggle="buttons")
                 label.btn(for=item)
-                  input(type="radio" name="reward" id=item value=item)
+                  input(type="radio" name="reward" id=item value=item v-model="reward")
                   img(height=48 width=48 src=("/images/items/"+item+".png") alt=item)
 
         hr
-        div#loading.text-center
+        div#loading.text-center(v-if="loading")
           div.spinner-border.text-primary(role="status")
           p Loading...
-        div.table-responsive
+
+        #tresults.table-responsive(v-else-if="data.length"): table.table.table-striped
+          thead
+            tr
+              th
+              th Name
+              th #
+          tbody
+            tr(v-for="(card, index) in data" :key="index")
+              td
+                span(v-if="card.owned")
+                  <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
+                    <path fill="#c8e6c9" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z"></path><path fill="#4caf50" d="M34.586,14.586l-13.57,13.586l-5.602-5.586l-2.828,2.828l8.434,8.414l16.395-16.414L34.586,14.586z"></path>
+                  </svg>
+                span(v-else)
+                  <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
+                    <path fill="#424242" d="M24,4c-5.5,0-10,4.5-10,10v4h4v-4c0-3.3,2.7-6,6-6s6,2.7,6,6v4h4v-4C34,8.5,29.5,4,24,4z"></path><path fill="#FB8C00" d="M36,44H12c-2.2,0-4-1.8-4-4V22c0-2.2,1.8-4,4-4h24c2.2,0,4,1.8,4,4v18C40,42.2,38.2,44,36,44z"></path><path fill="#C76E00" d="M24 28A3 3 0 1 0 24 34A3 3 0 1 0 24 28Z"></path>
+                  </svg>
+              td
+                a(:href="'/card/'+card.uniqueName")
+                  img(:src="'/images/cards/S/'+card.uniqueName+'.jpg'" width=65 height=65 :alt="card.name" loading="lazy" style="margin-right:8px;")
+                  if t("lang") === "ja"
+                    span {{ card.ja_name }}
+                  else
+                    span {{ card.name }}
+              td
+                .custom-control.custom-checkbox.custom-control-inline(
+                  v-for="(reward, rIndex) in card.dt"
+                  :key="rIndex"
+                )
+                  input.custom-control-input(
+                    type="checkbox"
+                    :id="reward._id"
+                    :checked="reward.owned"
+                    @change="toggleReward(reward)"
+                  )
+                  label.custom-control-label(:for="reward._id")
+                    div(v-if="reward.type === 'item' & reward.name !== '???'")
+                      img(:src="'/images/items/'+reward.name+'.png'" :alt="reward.name" width=48 height=48)
+                    div(v-else-if="reward.type === 'icon'")
+                      img(src="/images/tree_rewards/icon.png" :alt="reward.name" width=32 height=32)
+                      span.mt-2 {{ reward.name.replace(card.name, '').replace("Locked", "Original").replace("Unlocked", "Flower Unlocked") }}
+                    div(v-else)
+                      img(:src="'/images/tree_rewards/'+reward.type+'.png'" :alt="reward.name" width=32 height=32)
+
+        p(v-else) No cards available. Check
+          |
+          |
+          a(href="/ask/items") Devil's Tree Rewards' page
+          |
+          |  for a complete list of cards with wanted items.
+    .card.mt-4: .card-body
+      h5.card-title More Tips & Info
+      p.card-text Cards are displayed alphabetically. Rewards are displayed based on their cost. Rewards with unknown costs are displayed at the front.
+      h6.card-title Reward Types
+      p.card-text
+        img(src="/images/tree_rewards/item.png" alt="item icon" width=32 height=32)
+        |
+        | this icon shows up when the reward is an item, but we don't know which one. It you know, please help us add the information by doing to the card page and click edit button to add the info.
+        | You can also let us know in our discord channel and someone else will add it :)
+        ul.list-inline
+          li.list-inline-item
+            img(src="/images/tree_rewards/icon.png" alt="item icon" width=32 height=32)
+            |
+            | icon.
+          li.list-inline-item
+            img(src="/images/tree_rewards/bgm.png" alt="item icon" width=32 height=32)
+            |
+            | bgm.
+          li.list-inline-item
+            img(src="/images/tree_rewards/wallpaper.png" alt="item icon" width=32 height=32)
+            |
+            | wallpaper.
+          li.list-inline-item
+            img(src="/images/tree_rewards/clothing.png" alt="clothing icon" width=32 height=32)
+            |
+            | clothing.
+          li.list-inline-item
+            img(src="/images/tree_rewards/voice.png" alt="voice icon" width=32 height=32)
+            |
+            | voice.
+          li.list-inline-item
+            img(src="/images/tree_rewards/chat.png" alt="chat icon" width=32 height=32)
+            |
+            | chat.
+          li.list-inline-item
+            img(src="/images/tree_rewards/skill_animation.png" alt="skill_animation icon" width=32 height=32)
+            |
+            | skill animation. Available only with UR+ cards.
+          li.list-inline-item
+            img(src="/images/tree_rewards/moving_picture.png" alt="moving_picture icon" width=32 height=32)
+            |
+            | moving picture (homescreen). Available only with UR+ cards.
+          li.list-inline-item
+            img(src="/images/tree_rewards/home_picture.png" alt="home_picture icon" width=32 height=32)
+            |
+            | home picture (also wallpaper).
+  script.
+    const { createApp, ref, watch } = Vue;
+    createApp({
+      setup() {
+        const type = ref("Demon");
+        const character = ref("Lucifer");
+        const rarity = ref("UR");
+        const attribute = ref("All");
+        const reward = ref("All");
+        const data = ref([]);
+        const loading = ref(false);
+
+        const fetchData = async () => {
+          try {
+            const url = `/getTreeData?type=${type.value}&rarity=${rarity.value}&character=${character.value}&attribute=${attribute.value}&reward=${reward.value}`;
+            const res = await fetch(url);
+            const json = await res.json();
+            data.value = json;
+          } catch (err) {
+            console.error("Fetch error:", err);
+          } finally {
+            loading.value = false;
+          }
+        };
+
+        watch([type, character, rarity, attribute, reward], fetchData, { immediate: true });
+
+        const toggleReward = async (rewardItem) => {
+          rewardItem.owned = !rewardItem.owned;
+          try {
+            const res = await fetch("/update_tree", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                node: rewardItem._id,
+                isUnlocked: rewardItem.owned,
+              }),
+            });
+
+            if (!res.ok) throw new Error("Failed to update reward");
+
+            const result = await res.json();
+            if (result.err) throw new Error(result.err.message);
+
+            showAlert("success", "Reward updated successfully.");
+          } catch (err) {
+            console.error("Error updating reward:", err);
+            showAlert("danger", "Error updating reward.")
+            rewardItem.owned = !rewardItem.owned; // Revert change on error
+          }
+        };
+
+        return { type, character, rarity, attribute, reward, data, loading, toggleReward };
+      }
+    }).mount("#app");
 
   style.
     .btn-group-toggle label:has(input[type="radio"]:checked) {
@@ -90,4 +257,18 @@ block content
       border-radius: 8px;
       padding: 4px;
       margin: 4px;
+    }
+
+    .custom-control-label {
+      display: flex;
+      align-items: center;
+    }
+    .custom-control-label::before,
+    .custom-control-label::after {
+      top: 50%;
+      transform: translateY(-50%); /* center the radio circle vertically */
+    }
+
+    #tresults td {
+      vertical-align: middle;
     }
