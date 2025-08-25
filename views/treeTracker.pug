@@ -1,7 +1,7 @@
 extends layout
 
 block scripts
-  script(src="https://unpkg.com/vue@3/dist/vue.global.js")
+  script(src="https://unpkg.com/vue@3/dist/vue.global.prod.js")
 
 block content
   div#app.container
@@ -13,7 +13,7 @@ block content
         p.card-text Can't find a card with a wanted item? Head to
           |
           |
-          a(href="/ask/items") Devil's Tree Rewards' page
+          a(href="/ask/dt-rewards") Devil's Tree Rewards' page
           |
           | for a list of cards with specific items.
         p.card-text
@@ -91,60 +91,74 @@ block content
                   img(height=48 width=48 src=("/images/items/"+item+".png") alt=item)
 
         hr
-        div#loading.text-center(v-if="loading")
-          div.spinner-border.text-primary(role="status")
-          p Loading...
+        if user
+          div#loading.text-center(v-if="loading")
+            div.spinner-border.text-primary(role="status")
+            p Loading...
 
-        #tresults.table-responsive(v-else-if="data.length"): table.table.table-striped
-          thead
-            tr
-              th
-              th Name
-              th #
-          tbody
-            tr(v-for="(card, index) in data" :key="index")
-              td
-                span(v-if="card.owned")
-                  <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
-                    <path fill="#c8e6c9" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z"></path><path fill="#4caf50" d="M34.586,14.586l-13.57,13.586l-5.602-5.586l-2.828,2.828l8.434,8.414l16.395-16.414L34.586,14.586z"></path>
-                  </svg>
-                span(v-else)
-                  <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
-                    <path fill="#424242" d="M24,4c-5.5,0-10,4.5-10,10v4h4v-4c0-3.3,2.7-6,6-6s6,2.7,6,6v4h4v-4C34,8.5,29.5,4,24,4z"></path><path fill="#FB8C00" d="M36,44H12c-2.2,0-4-1.8-4-4V22c0-2.2,1.8-4,4-4h24c2.2,0,4,1.8,4,4v18C40,42.2,38.2,44,36,44z"></path><path fill="#C76E00" d="M24 28A3 3 0 1 0 24 34A3 3 0 1 0 24 28Z"></path>
-                  </svg>
-              td
-                a.d-flex.align-items-center(:href="'/card/'+card.uniqueName")
-                  img(:src="'/images/cards/S/'+card.uniqueName+'.jpg'" width=65 height=65 :alt="card.name" loading="lazy" style="margin-right:8px;")
-                  if t("lang") === "ja"
-                    span {{ card.ja_name }}
-                  else
-                    span {{ card.name }}
-              td
-                .custom-control.custom-checkbox.custom-control-inline(
-                  v-for="(reward, rIndex) in card.dt"
-                  :key="rIndex"
-                )
-                  input.custom-control-input(
-                    type="checkbox"
-                    :id="reward._id"
-                    :checked="reward.owned"
-                    @change="toggleReward(reward)"
+          #tresults.table-responsive(v-else-if="data.length"): table.table
+            thead
+              tr
+                th
+                th Name
+                th #
+            tbody
+              tr(v-for="(card, index) in data" :key="index")
+                td
+                  span(v-if="card.owned")
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
+                      <path fill="#c8e6c9" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z"></path><path fill="#4caf50" d="M34.586,14.586l-13.57,13.586l-5.602-5.586l-2.828,2.828l8.434,8.414l16.395-16.414L34.586,14.586z"></path>
+                    </svg>
+                  span(v-else)
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
+                      <path fill="#424242" d="M24,4c-5.5,0-10,4.5-10,10v4h4v-4c0-3.3,2.7-6,6-6s6,2.7,6,6v4h4v-4C34,8.5,29.5,4,24,4z"></path><path fill="#FB8C00" d="M36,44H12c-2.2,0-4-1.8-4-4V22c0-2.2,1.8-4,4-4h24c2.2,0,4,1.8,4,4v18C40,42.2,38.2,44,36,44z"></path><path fill="#C76E00" d="M24 28A3 3 0 1 0 24 34A3 3 0 1 0 24 28Z"></path>
+                    </svg>
+                td
+                  a.d-flex.align-items-center(:href="'/card/'+card.uniqueName")
+                    img(:src="'/images/cards/S/'+card.uniqueName+'.jpg'" width=65 height=65 :alt="card.name" loading="lazy" style="margin-right:8px;")
+                    if t("lang") === "ja"
+                      span {{ card.ja_name }}
+                    else
+                      span {{ card.name }}
+                td
+                  .custom-control.custom-checkbox.custom-control-inline(
+                    v-for="(reward, rIndex) in card.dt"
+                    :key="rIndex"
                   )
-                  label.custom-control-label(:for="reward._id")
-                    div(v-if="reward.type === 'item' & reward.name !== '???'")
-                      img(:src="'/images/items/'+reward.name+'.png'" :alt="reward.name" width=48 height=48)
-                    div(v-else-if="reward.type === 'icon'")
-                      img(src="/images/tree_rewards/icon.png" :alt="reward.name" width=32 height=32)
-                      span.mt-2 {{ reward.name.replace(card.name, '').replace("Locked", "Original").replace("Unlocked", "Flower Unlocked") }}
-                    div(v-else)
-                      img(:src="'/images/tree_rewards/'+reward.type+'.png'" :alt="reward.name" width=32 height=32)
+                    input.custom-control-input(
+                      type="checkbox"
+                      :id="reward._id"
+                      :checked="reward.owned"
+                      @change="toggleReward(reward)"
+                    )
+                    label.custom-control-label(:for="reward._id")
+                      div(v-if="reward.type === 'item' & reward.name !== '???'")
+                        img(:src="'/images/items/'+reward.name+'.png'" :alt="reward.name" width=48 height=48)
+                      div(v-else-if="reward.type === 'icon'")
+                        img(src="/images/tree_rewards/icon.png" :alt="reward.name" width=32 height=32)
+                        span.mt-2 {{ reward.name.replace(card.name, '').replace("Locked", "Original").replace("Unlocked", "Flower Unlocked") }}
+                      div(v-else)
+                        img(:src="'/images/tree_rewards/'+reward.type+'.png'" :alt="reward.name" width=32 height=32)
 
-        p(v-else) No cards available. Check
-          |
-          |
-          a(href="/ask/items") Devil's Tree Rewards' page
-          |
-          |  for a complete list of cards with wanted items.
+          p.text-center(v-else) No cards available. Check
+            |
+            |
+            a(href="/ask/dt-rewards") Devil's Tree Rewards' page
+            |
+            | for a complete list of cards with wanted items.
+        else
+          p.h5.text-center Please
+            |
+            |
+            a(href="/login") log in
+            |
+            | to use this feature!
+          p.text-center Alternatively, you can visit
+            |
+            |
+            a(href="/ask/dt-rewards") Devil's Tree Rewards' page
+            |
+            | for a list of cards with specific rewards without needing to log in.
     .card.mt-4: .card-body
       h5.card-title More Tips & Info
       p.card-text Cards are displayed alphabetically. Rewards are displayed based on their cost. Rewards with unknown costs are displayed at the front.
@@ -152,8 +166,12 @@ block content
       p.card-text
         img(src="/images/tree_rewards/item.png" alt="item icon" width=32 height=32)
         |
-        | this icon shows up when the reward is an item, but we don't know which one. It you know, please help us add the information by doing to the card page and click edit button to add the info.
-        | You can also let us know in our discord channel and someone else will add it :)
+        | this icon shows up when the reward is an item, but we don't know which one. It you know, please help us add the information by going to the card page and click edit button to add the info.
+        | You can also leave a message in our
+        |
+        a(href="https://discord.gg/2GcBgdJ65s") discord channel
+        |
+        | and someone else will add it.
         ul.list-inline
           li.list-inline-item
             img(src="/images/tree_rewards/icon.png" alt="item icon" width=32 height=32)
@@ -191,61 +209,62 @@ block content
             img(src="/images/tree_rewards/home_picture.png" alt="home_picture icon" width=32 height=32)
             |
             | home picture (also wallpaper).
-  script.
-    const { createApp, ref, watch } = Vue;
-    createApp({
-      setup() {
-        const type = ref("Demon");
-        const character = ref("Lucifer");
-        const rarity = ref("UR");
-        const attribute = ref("All");
-        const reward = ref("All");
-        const data = ref([]);
-        const loading = ref(false);
+  if user
+    script.
+      const { createApp, ref, watch } = Vue;
+      createApp({
+        setup() {
+          const type = ref("Demon");
+          const character = ref("Lucifer");
+          const rarity = ref("UR");
+          const attribute = ref("All");
+          const reward = ref("All");
+          const data = ref([]);
+          const loading = ref(false);
 
-        const fetchData = async () => {
-          try {
-            const url = `/getTreeData?type=${type.value}&rarity=${rarity.value}&character=${character.value}&attribute=${attribute.value}&reward=${reward.value}`;
-            const res = await fetch(url);
-            const json = await res.json();
-            data.value = json;
-          } catch (err) {
-            console.error("Fetch error:", err);
-          } finally {
-            loading.value = false;
-          }
-        };
+          const fetchData = async () => {
+            try {
+              const url = `/getTreeData?type=${type.value}&rarity=${rarity.value}&character=${character.value}&attribute=${attribute.value}&reward=${reward.value}`;
+              const res = await fetch(url);
+              const json = await res.json();
+              data.value = json;
+            } catch (err) {
+              console.error("Fetch error:", err);
+            } finally {
+              loading.value = false;
+            }
+          };
 
-        watch([type, character, rarity, attribute, reward], fetchData, { immediate: true });
+          watch([type, character, rarity, attribute, reward], fetchData, { immediate: true });
 
-        const toggleReward = async (rewardItem) => {
-          rewardItem.owned = !rewardItem.owned;
-          try {
-            const res = await fetch("/update_tree", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                node: rewardItem._id,
-                isUnlocked: rewardItem.owned,
-              }),
-            });
+          const toggleReward = async (rewardItem) => {
+            rewardItem.owned = !rewardItem.owned;
+            try {
+              const res = await fetch("/update_tree", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  node: rewardItem._id,
+                  isUnlocked: rewardItem.owned,
+                }),
+              });
 
-            if (!res.ok) throw new Error("Failed to update reward");
+              if (!res.ok) throw new Error("Failed to update reward");
 
-            const result = await res.json();
-            if (result.err) throw new Error(result.err.message);
+              const result = await res.json();
+              if (result.err) throw new Error(result.err.message);
 
-            showAlert("success", "Reward updated successfully.");
-          } catch (err) {
-            console.error("Error updating reward:", err);
-            showAlert("danger", "Error updating reward.")
-            rewardItem.owned = !rewardItem.owned; // Revert change on error
-          }
-        };
+              showAlert("success", "Reward updated successfully.");
+            } catch (err) {
+              console.error("Error updating reward:", err);
+              showAlert("danger", "Error updating reward.")
+              rewardItem.owned = !rewardItem.owned; // Revert change on error
+            }
+          };
 
-        return { type, character, rarity, attribute, reward, data, loading, toggleReward };
-      }
-    }).mount("#app");
+          return { type, character, rarity, attribute, reward, data, loading, toggleReward };
+        }
+      }).mount("#app");
 
   style.
     .btn-group-toggle label:has(input[type="radio"]:checked) {
