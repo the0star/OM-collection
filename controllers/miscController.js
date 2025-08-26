@@ -2,7 +2,6 @@ const https = require("https");
 const createError = require("http-errors");
 const Sentry = require("@sentry/node");
 
-const cacheService = require("../services/cacheService");
 const cardService = require("../services/cardService");
 const userService = require("../services/userService");
 
@@ -19,7 +18,7 @@ exports.closingNotice = function (req, res, next) {
 
 exports.surpriseGuest = async function (req, res, next) {
     try {
-        let c = [
+        const c = [
             "Lucifer",
             "Mammon",
             "Leviathan",
@@ -36,7 +35,9 @@ exports.surpriseGuest = async function (req, res, next) {
 
         let character = req.params.character;
         if (character && !c.includes(character))
-            return next(createError(404, "Character not found."));
+            return next(
+                createError(404, "Surprise guest character not found.")
+            );
 
         return res.render("surpriseGuest", {
             title:
@@ -46,7 +47,6 @@ exports.surpriseGuest = async function (req, res, next) {
                 "An all-in-one guide for Obey Me! surprise guest interactions. Karasu's interactive guide features all characters including the demon brothers and side characters. ... Lucifer, Mammon, Leviathan, Satan, Asmodeus, Beelzebub, Belphegor, Luke, Simeon, Barbatos, Diavolo, Solomon.",
             user: req.user,
             character: character,
-            interactions: await cacheService.getCachedSurpriseGuest(),
         });
     } catch (e) {
         return next(e);

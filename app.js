@@ -31,12 +31,7 @@ app.set("views", __dirname + "/views");
 app.set("view engine", "pug");
 
 mongoose.set("strictQuery", true);
-mongoose
-    .connect(process.env.URI)
-    .then(() => {
-        cacheService.init();
-    })
-    .catch((err) => console.error(err));
+mongoose.connect(process.env.URI);
 mongoose.connection.on("error", (err) => {
     console.error(err);
 });
