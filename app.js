@@ -22,7 +22,6 @@ const suggestionRouter = require("./routes/suggestions");
 const askKarasuRouter = require("./routes/askKarasu");
 
 const localizationService = require("./services/localizationService");
-const cacheService = require("./services/cacheService");
 
 Sentry.init({ environment: process.env.NODE_ENV, dsn: process.env.SENTRY });
 
