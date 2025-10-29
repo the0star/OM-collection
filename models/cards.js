@@ -19,7 +19,7 @@ const dtReqSchema = new Schema(
 );
 
 const dtRewardSchema = new Schema({
-    reward: { type: String, required: true },
+    reward: { type: String, required: true, trim: true },
     count: { type: Number },
     type: {
         type: String,
@@ -49,8 +49,8 @@ const skillSchema = new Schema(
             type: String,
             enum: ["Special Skill", "Ability", "Auto Skill"],
         },
-        title: { type: String },
-        description: { type: String },
+        title: { type: String, trim: true },
+        description: { type: String, trim: true },
     },
     { _id: false }
 );
