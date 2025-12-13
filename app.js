@@ -30,27 +30,25 @@ app.set("views", __dirname + "/views");
 app.set("view engine", "pug");
 
 mongoose.set("strictQuery", true);
-mongoose.connect(process.env.URI);
-mongoose.connection.on("error", (err) => {
-    console.error(err);
+mongoose.connect(process.env.URI, {
+    maxPoolSize: 10,
 });
-
-Sentry.setupExpressErrorHandler(app);
+mongoose.connection.on("error", (err) => {
+    console.error("MongoDB connection error:", err);
+});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(compression());
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(
-    logger("dev", { skip: (req, res) => req.app.get("env") !== "production" })
-);
+app.use(logger(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 app.use(express.static(__dirname + "/public"));
 
 app.use(
     session({
-        store: new MongoStore({ url: process.env.URI }),
+        store: new MongoStore({ mongooseConnection: mongoose.connection }),
         secret: process.env.SECRET,
         resave: false,
         saveUninitialized: false,
@@ -82,6 +80,8 @@ app.use("/ask", askKarasuRouter);
 app.use((req, res, next) =>
     next(createError(404, { title: "Page not found" }))
 );
+
+Sentry.setupExpressErrorHandler(app);
 
 app.use(function (err, req, res, next) {
     let ignoredErrors = [401, 404];
