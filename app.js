@@ -2,8 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const session = require("express-session");
-const mongoose = require("mongoose");
-const MongoStore = require("connect-mongo")(session);
+const MongoStore = require("connect-mongo");
 const createError = require("http-errors");
 const cookieParser = require("cookie-parser");
 const Sentry = require("@sentry/node");
@@ -13,6 +12,8 @@ const passport = require("passport");
 const compression = require("compression");
 const flash = require("connect-flash");
 const bodyParser = require("body-parser");
+
+const db = require("./config/db");
 
 const indexRouter = require("./routes/index");
 const cardsRouter = require("./routes/cards");
@@ -29,13 +30,14 @@ const app = express();
 app.set("views", __dirname + "/views");
 app.set("view engine", "pug");
 
-mongoose.set("strictQuery", true);
-mongoose.connect(process.env.URI, {
-    maxPoolSize: 10,
-});
-mongoose.connection.on("error", (err) => {
-    console.error("MongoDB connection error:", err);
-});
+(async () => {
+    try {
+        await db.connect();
+        console.log("MongoDB connected");
+    } catch (err) {
+        console.error("MongoDB connection failed", err);
+    }
+})();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -46,15 +48,20 @@ app.use(logger(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 app.use(express.static(__dirname + "/public"));
 
+app.set("trust proxy", 1);
 app.use(
     session({
-        store: new MongoStore({ mongooseConnection: mongoose.connection }),
+        store: MongoStore.create({
+            mongoUrl: process.env.URI,
+            touchAfter: 24 * 3600,
+        }),
         secret: process.env.SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 90,
             sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
         },
     })
 );
