@@ -40,11 +40,11 @@ app.set("view engine", "pug");
     }
 })();
 
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(compression());
-app.use(helmet({ contentSecurityPolicy: false }));
 app.use(logger(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 app.use(express.static(__dirname + "/public"));
