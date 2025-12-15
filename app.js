@@ -14,6 +14,7 @@ const flash = require("connect-flash");
 const bodyParser = require("body-parser");
 
 const db = require("./config/db");
+const limiter = require("./config/redis-limiter");
 
 const indexRouter = require("./routes/index");
 const cardsRouter = require("./routes/cards");
@@ -69,6 +70,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(limiter);
 app.use(localizationService.getLocalizationMiddleware(false));
 app.use(flash());
 

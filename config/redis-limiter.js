@@ -1,0 +1,21 @@
+const { rateLimit } = require("express-rate-limit");
+const { RedisStore } = require("rate-limit-redis");
+const RedisClient = require("ioredis");
+
+const client = new RedisClient(process.env.REDIS_SECRET);
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    ipv6Subnet: 56, // Set to 60 or 64 to be less aggressive, or 52 or 48 to be more aggressive
+    skip: (req) => req.path.startsWith("/images"),
+
+    // Redis store configuration
+    store: new RedisStore({
+        sendCommand: (command, ...args) => client.call(command, ...args),
+    }),
+});
+
+module.exports = limiter;
