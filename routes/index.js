@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const https = require("https");
+const proxy = require("express-http-proxy");
 
 const cardController = require("../controllers/cardsController");
 const userController = require("../controllers/userController");
@@ -87,12 +87,11 @@ router.get("/team-builder", miscController.getTeamBuilder);
 router.get("/stories", storyController.getStories);
 router.get("/story/main/:name", storyController.getStory);
 
-router.use("/images", (req, res, next) => {
-    if (/^\/(cards\/|events\/|bg\/)/.test(req.path)) {
-        res.redirect(`${remoteImgURL}${req.originalUrl}`);
-    } else {
-        next();
-    }
-});
+router.use(
+    ["/images/cards", "/images/events", "/images/bg"],
+    proxy(remoteImgURL, {
+        proxyReqPathResolver: (req) => req.originalUrl,
+    })
+);
 
 module.exports = router;
