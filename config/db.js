@@ -9,7 +9,7 @@ exports.connect = async function () {
         mongoose.set("strictQuery", true);
         conn = mongoose
             .connect(uri, {
-                serverSelectionTimeoutMS: 5000,
+                // serverSelectionTimeoutMS: 5000,
             })
             .then(() => mongoose);
         await conn;

@@ -31,14 +31,11 @@ const app = express();
 app.set("views", __dirname + "/views");
 app.set("view engine", "pug");
 
-(async () => {
-    try {
-        await db.connect();
-        console.log("MongoDB connected");
-    } catch (err) {
+db.connect()
+    .then(() => console.log("MongoDB connected"))
+    .catch((err) => {
         console.error("MongoDB connection failed", err);
-    }
-})();
+    });
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
