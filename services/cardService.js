@@ -256,23 +256,6 @@ getOwnedFilter = function (user) {
     ];
 };
 
-// TODO: fix $lookup exceeds 16MB BSON limit.
-// getLockedFilter = function (user) {
-// 	return [
-// 		{ $lookup: {
-// 				from: "users",
-// 				let: { nodeId: "$dt._id" },
-// 				pipeline: [
-// 					{ $match: { $expr: { $eq: ["$info.name", user.name] } } },
-// 					{	$unwind: {
-// 						path: "$tree",
-// 						preserveNullAndEmptyArrays: false}},
-// 					{ $match: { $expr: { $not: { $eq: ["$$nodeId", "$tree"] } } } }
-// 				],
-// 				as: "locked"
-// 		}},
-// 		{ $project: {"locked": 0} }];
-// };
 
 findTreeNodes = async function (matchField, matchValue, user, owned, locked) {
     let match = {};
@@ -292,35 +275,14 @@ findTreeNodes = async function (matchField, matchValue, user, owned, locked) {
     let doc = await Cards.aggregate(pipeline);
 
     if (user && owned) {
-        // let ownedFilter = getOwnedFilter(user);
-        // pipeline = pipeline.concat(ownedFilter);
-
         let cards = (await userService.getUser(user.name)).cards.owned;
         doc = doc.filter((x) => cards.includes(x.uniqueName));
     }
 
     if (user && locked) {
-        // let lockedFilter = getLockedFilter(user);
-        // pipeline = pipeline.concat(lockedFilter);
-
         let nodes = (await userService.getUser(user.name)).tree;
         doc = doc.filter((x) => !nodes.includes(x.dt._id));
     }
-
-    // pipeline.push(
-    // 	{ $sort: { number: -1 } },
-    // 	{
-    // 		$project: {
-    // 			"name": 1,
-    // 			"ja_name": 1,
-    // 			"uniqueName": 1,
-    // 			"dt.reward": 1,
-    // 			"dt.type": 1,
-    // 			"dt.count": 1,
-    // 			"dt.requirements": 1,
-    // 			"dt.grimmCost": 1
-    // 		}
-    // 	});
 
     return doc;
 };
