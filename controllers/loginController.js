@@ -195,20 +195,23 @@ exports.signup = async (req, res, next) => {
 };
 
 exports.signupCheckUsername = async function (req, res) {
-    if (blacklist.includes(req.body.username.toLowerCase())) {
-        return res.send(true);
-    }
-    try {
-        var exists = await userService.getUser(req.body.username);
-    } catch (e) {
-        console.error(e);
-        return res.send("error");
+    const username = req.body?.username;
+    if (!username) {
+        return res.status(400).send(true);
     }
 
-    if (!exists) {
-        return res.send(false);
+    const lowerUsername = username.toLowerCase();
+    if (blacklist.includes(lowerUsername)) {
+        return res.send(true);
     }
-    res.send(true);
+
+    try {
+        const exists = await userService.getUser(lowerUsername);
+        return res.send(!!exists);
+    } catch (e) {
+        console.error("Database error in signupCheckUsername:", e);
+        return res.send("error");
+    }
 };
 
 // User checks
@@ -232,38 +235,49 @@ exports.hasAccess = function (role) {
 
 exports.isSameUser = function () {
     return function (req, res, next) {
-        if (
-            req.user &&
-            (req.user.name == req.params.name || exports.hasAccess("Admin"))
-        ) {
-            return next();
-        }
-        res.redirect("/login");
+        if (req.user && req.user.name === req.params?.name) return next();
+        return res.redirect("/login");
     };
 };
 
 exports.canEdit = function (type = "regular") {
     return function (req, res, next) {
-        if (
-            !req.user ||
-            req.user.supportStatus.some(
-                (badge) => badge.name === "bannedFromMakingSuggestions"
-            ) ||
-            (type === "trusted" &&
-                req.user.type !== "Admin" &&
-                !req.user.supportStatus.some(
-                    (badge) => badge.name === "trustedContributor"
-                ))
-        ) {
+        if (!req.user) {
             return next(
-                createError(
-                    401,
-                    (properties = {
-                        errorMessage: "Please log in to access this page.",
-                    })
-                )
+                createError(401, {
+                    errorMessage: "Please log in to access this page.",
+                })
             );
         }
+
+        const badges = req.user.supportStatus || [];
+        const isBanned = badges.some(
+            (badge) => badge.name === "bannedFromMakingSuggestions"
+        );
+        if (isBanned) {
+            return next(
+                createError(403, {
+                    errorMessage:
+                        "You do not have edit permission. If you think this is an error, please contact us via Discord.",
+                })
+            );
+        }
+
+        if (type === "trusted") {
+            const isAdmin = req.user.type === "Admin";
+            const isTrusted = badges.some(
+                (badge) => badge.name === "trustedContributor"
+            );
+            if (!isAdmin && !isTrusted) {
+                return next(
+                    createError(403, {
+                        errorMessage:
+                            "You do not have edit permission. If you think this is an error, please contact us via Discord.",
+                    })
+                );
+            }
+        }
+
         return next();
     };
 };

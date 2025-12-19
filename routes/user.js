@@ -39,19 +39,19 @@ router.post(
     userController.banUser
 );
 
-//
+// Misc.
 router.get(
     "/tree-progress",
-    loginController.isSameUser(),
+    loginController.isLoggedIn(),
     userController.getTreeProgressPage
 );
 router.get(
     "/edits",
-    loginController.isSameUser(),
+    loginController.isLoggedIn(),
     userController.getUserSuggestionPage
 );
 
 // Account settings page
-router.get("/", loginController.isSameUser(), userController.getAccountPage);
+router.get("/", loginController.isLoggedIn(), userController.getAccountPage);
 
 module.exports = router;

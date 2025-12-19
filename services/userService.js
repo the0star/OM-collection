@@ -53,13 +53,13 @@ exports.getUserList = async function (sortField, sortOrder, limit, startIndex) {
     return await query;
 };
 
-exports.getOwnedCardsPreview = async (username) =>
-    await getCardCollectionPreview(username, "owned");
+exports.getOwnedCardsPreview = (username) =>
+    getCardCollectionPreview(username, "owned");
 
-exports.getFaveCardsPreview = async (username) =>
-    await getCardCollectionPreview(username, "faved");
+exports.getFaveCardsPreview = (username) =>
+    getCardCollectionPreview(username, "faved");
 
-getCardCollectionPreview = function (username, collectionType) {
+const getCardCollectionPreview = function (username, collectionType) {
     return Users.aggregate([
         { $match: { "info.name": username } },
         { $unwind: `$cards.${collectionType}` },
@@ -344,7 +344,7 @@ exports.getOwnedCardCount = (card) => getCardCountInCollections(card, "owned");
 
 exports.getFavedCardCount = (card) => getCardCountInCollections(card, "faved");
 
-getCardCountInCollections = function (card, collection) {
+const getCardCountInCollections = function (card, collection) {
     let countCondition = {};
     countCondition[`cards.${collection}`] = card;
     return Users.countDocuments(countCondition);

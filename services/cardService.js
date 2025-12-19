@@ -220,7 +220,7 @@ exports.getTotalTreeStats = async function () {
 };
 
 // TODO: reduce aggregation size.
-getOwnedFilter = function (user) {
+const getOwnedFilter = function (user) {
     return [
         {
             $lookup: {
@@ -256,8 +256,13 @@ getOwnedFilter = function (user) {
     ];
 };
 
-
-findTreeNodes = async function (matchField, matchValue, user, owned, locked) {
+const findTreeNodes = async function (
+    matchField,
+    matchValue,
+    user,
+    owned,
+    locked
+) {
     let match = {};
     match[matchField] = matchValue;
 
