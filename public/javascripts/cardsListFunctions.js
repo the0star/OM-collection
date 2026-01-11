@@ -1,19 +1,40 @@
+"use strict";
+
 let changedCards = {};
 let selectionMode = false;
 let ownedCards = [];
-let querystr = new URLSearchParams(document.location.search);
+let querystr = new URLSearchParams(window.location.search);
 let totalCardCount = {
-        demon: "--",
-        memory: "--",
-    },
-    selectedCardCount = {
-        demon: "--",
-        memory: "--",
-    };
+    demon: "--",
+    memory: "--",
+};
+let selectedCardCount = {
+    demon: "--",
+    memory: "--",
+};
+let cardList = {
+    demon: [],
+    memory: [],
+};
+const iasInstances = {
+    demon: null,
+    memory: null,
+};
 
-//#region constants
+const CARD_ROW_COUNT = 9;
+const ROWS_PER_PAGE = 10;
+const SELECTORS = {
+    demonContainer: "#demoncards>.ias",
+    memoryContainer: "#memorycards>.ias",
+    demonSpinner: "#demoncards>.spinner",
+    memorySpinner: "#memorycards>.spinner",
+    demonEmpty: "#demoncards>p",
+    memoryEmpty: "#memorycards>p",
+    cardsContainer: "#demoncards>.ias, #memorycards>.ias",
+};
+
 const splitCardsByVisibility = (cards, currentCard) => {
-    let cardImage = $(currentCard).find("img");
+    const cardImage = $(currentCard).find("img");
     if ($(currentCard).isInViewport()) {
         cards.visible.push(cardImage);
     } else {
@@ -24,7 +45,11 @@ const splitCardsByVisibility = (cards, currentCard) => {
 
 const cardOwned = (name) => ownedCards.includes(name);
 const cardSelectionChanged = (name) => name in changedCards;
-//#endregion
+const getUniqueNameFromSrc = (src) => {
+    if (!src) return "";
+    const filename = src.split("/").pop() || "";
+    return filename.split(".jpg")[0];
+};
 
 $(document).ready(function () {
     $("#search, #filters form").on("submit", applyFilters);
@@ -32,11 +57,7 @@ $(document).ready(function () {
     $("#resetFilters").click(resetFilters);
     $("#viewMenuDropdown a").click(updateViewType);
 
-    $("#demoncards>.ias, #memorycards>.ias").on(
-        "click",
-        ".cardPreview",
-        cardClicked
-    );
+    $(SELECTORS.cardsContainer).on("click", ".cardPreview", cardClicked);
 
     $("button#manageCollection, button#saveManaging").on(
         "click",
@@ -53,9 +74,7 @@ $(document).ready(function () {
         switchSelectionMode.call();
     });
 
-    let openedTab = localStorage.getItem("cardTab")
-        ? localStorage.getItem("cardTab")
-        : "demon-tab";
+    const openedTab = localStorage.getItem("cardTab") || "demon-tab";
     $("#" + openedTab).tab("show");
     $("#demon-tab, #memory-tab").on("click", function () {
         localStorage.setItem("cardTab", $(this).attr("id"));
@@ -68,27 +87,26 @@ $(window).on("beforeunload", () => {
 });
 
 function createCardDocuments(data, pageIndex) {
-    let frag = document.createDocumentFragment();
-    let cardsPerRow = 9;
-    let itemsPerPage = cardsPerRow * 10;
-    let totalPages = Math.ceil(data.length / itemsPerPage);
-    let offset = pageIndex * itemsPerPage;
+    const frag = document.createDocumentFragment();
+    const itemsPerPage = CARD_ROW_COUNT * ROWS_PER_PAGE;
+    const totalPages = Math.ceil(data.length / itemsPerPage);
+    const offset = pageIndex * itemsPerPage;
     let maxCards = data.length;
     maxCards =
-        maxCards % cardsPerRow === 0
+        maxCards % CARD_ROW_COUNT === 0
             ? maxCards
-            : maxCards + cardsPerRow - (maxCards % cardsPerRow);
+            : maxCards + CARD_ROW_COUNT - (maxCards % CARD_ROW_COUNT);
 
     for (
         let i = offset, len = offset + itemsPerPage;
         i < len && i < maxCards;
         i++
     ) {
-        let item = createCardElement(data[i]);
+        const item = createCardElement(data[i]);
         frag.appendChild(item);
     }
 
-    let hasNextPage = pageIndex < totalPages - 1;
+    const hasNextPage = pageIndex < totalPages - 1;
 
     return { frag: frag, hasNextPage: hasNextPage };
 }
@@ -122,7 +140,7 @@ function createCardElement(card) {
         let bloomed = "";
         let figcaption =
             document.documentElement.lang === "ja" ? card.ja_name : card.name;
-        let sortby = querystr.get("sortby");
+        const sortby = querystr.get("sortby");
         let strength = "";
 
         if (viewtype === "bloomed" && card.type === "Demon") {
@@ -143,12 +161,13 @@ function createCardElement(card) {
         );
     }
 
-    let item = document.createElement("div");
+    const item = document.createElement("div");
     item.innerHTML = template.trim();
 
     if (selectionMode && card) {
-        let cardNotSelected =
-            cardSelectionChanged(card.uniqueName) == cardOwned(card.uniqueName);
+        const cardNotSelected =
+            cardSelectionChanged(card.uniqueName) ===
+            cardOwned(card.uniqueName);
         if (cardNotSelected) {
             $(item).find("img").addClass("notSelectedCard");
         }
@@ -167,8 +186,10 @@ function applyFilters(e) {
     querystr = new URLSearchParams(params.toString());
     updateURL();
 
-    $("#demoncards>.spinner, #memorycards>.spinner").removeClass("d-none");
-    $("#demoncards>p, #memorycards>p").addClass("d-none");
+    $(SELECTORS.demonSpinner + ", " + SELECTORS.memorySpinner).removeClass(
+        "d-none"
+    );
+    $(SELECTORS.demonEmpty + ", " + SELECTORS.memoryEmpty).addClass("d-none");
 
     // request cards
     getCards(params);
@@ -194,8 +215,8 @@ function getFilterQuery() {
 
     if (querystr.has("view")) params.set("view", querystr.get("view"));
 
-    const currentQueryString = document.location.search.substring(1);
-    if (cardList.length > 0 && params.toString() === currentQueryString) {
+    const currentQueryString = window.location.search.substring(1);
+    if (currentQueryString && params.toString() === currentQueryString) {
         return null;
     }
 
@@ -203,6 +224,7 @@ function getFilterQuery() {
 }
 
 function getCards(query) {
+    if (!query) return;
     query.set("path", PATH);
     if (PATH === "fav" || PATH === "collection") {
         query.set("user", window.location.pathname.split("/").at(-2));
@@ -230,7 +252,7 @@ function updateURL() {
 
 function updateViewType() {
     let currentView = querystr.get("view") ? querystr.get("view") : "icon";
-    let newView = $(this).data("viewtype");
+    const newView = $(this).data("viewtype");
     if (newView === currentView) return;
 
     $("#viewMenuDropdown>button").text($(this).text());
@@ -246,61 +268,64 @@ function updateViewType() {
 }
 
 function initInfiniteScroll() {
-    unbindInfiniteScroll();
+    destroyInfiniteScroll();
 
-    if (cardList.demon.length !== 0) {
-        const nextHandler = function (pageIndex) {
-            let result = createCardDocuments(cardList.demon, pageIndex);
-            return this.append(Array.from(result.frag.childNodes)).then(
-                () => result.hasNextPage
-            );
-        };
-        window.ias = new InfiniteAjaxScroll("#demoncards>.ias", {
-            item: ".cardPreview",
-            next: nextHandler,
-            logger: false,
-            prefill: false,
-            spinner: $("#demoncards>.spinner")[0],
-        });
-        ias.on("last", function () {
-            for (let i = 0; i < 9; i++) {
-                $("#demoncards>.ias").append(createCardElement());
-            }
-        });
-        ias.next();
-    } else {
-        $("#demoncards>p").removeClass("d-none");
-        $("#demoncards>.spinner").addClass("d-none");
-    }
-
-    if (cardList.memory.length !== 0) {
-        const nextHandler2 = function (pageIndex) {
-            let result = createCardDocuments(cardList.memory, pageIndex);
-            return this.append(Array.from(result.frag.childNodes)).then(
-                () => result.hasNextPage
-            );
-        };
-        window.ias2 = new InfiniteAjaxScroll("#memorycards>.ias", {
-            item: ".cardPreview",
-            next: nextHandler2,
-            logger: false,
-            prefill: false,
-            spinner: $("#memorycards>.spinner")[0],
-        });
-        ias2.on("last", function () {
-            for (let i = 0; i < 9; i++) {
-                $("#memorycards>.ias").append(createCardElement());
-            }
-        });
-        ias2.next();
-    } else {
-        $("#memorycards>p").removeClass("d-none");
-        $("#memorycards>.spinner").addClass("d-none");
-    }
+    initInfiniteScrollSection({
+        key: "demon",
+        cards: cardList.demon,
+        container: SELECTORS.demonContainer,
+        spinner: SELECTORS.demonSpinner,
+        empty: SELECTORS.demonEmpty,
+    });
+    initInfiniteScrollSection({
+        key: "memory",
+        cards: cardList.memory,
+        container: SELECTORS.memoryContainer,
+        spinner: SELECTORS.memorySpinner,
+        empty: SELECTORS.memoryEmpty,
+    });
 }
 
-function unbindInfiniteScroll() {
-    $("#demoncards>.ias, #memorycards>.ias").empty();
+function initInfiniteScrollSection(config) {
+    if (config.cards.length === 0) {
+        $(config.empty).removeClass("d-none");
+        $(config.spinner).addClass("d-none");
+        return;
+    }
+
+    const nextHandler = function (pageIndex) {
+        const result = createCardDocuments(config.cards, pageIndex);
+        return this.append(Array.from(result.frag.childNodes)).then(
+            () => result.hasNextPage
+        );
+    };
+
+    iasInstances[config.key] = new InfiniteAjaxScroll(config.container, {
+        item: ".cardPreview",
+        next: nextHandler,
+        logger: false,
+        prefill: false,
+        spinner: $(config.spinner)[0],
+    });
+
+    iasInstances[config.key].on("last", function () {
+        for (let i = 0; i < CARD_ROW_COUNT; i++) {
+            $(config.container).append(createCardElement());
+        }
+    });
+
+    iasInstances[config.key].next();
+}
+
+function destroyInfiniteScroll() {
+    ["demon", "memory"].forEach((key) => {
+        const instance = iasInstances[key];
+        if (instance && typeof instance.unbind === "function") {
+            instance.unbind();
+        }
+        iasInstances[key] = null;
+    });
+    $(SELECTORS.cardsContainer).empty();
 }
 
 function updateFilterParams() {
@@ -314,7 +339,7 @@ function updateFilterParams() {
     const checkedItems = checkboxes.filter(":checked");
 
     if (isRadio) {
-        if (name == "characters") {
+        if (name === "characters") {
             $("#characters label.btn").removeClass("active");
         }
         checkedItems.prop("checked", false);
@@ -327,7 +352,7 @@ function updateFilterParams() {
     if (allChecked || noneChecked) {
         $(`input[name=${name}][type=radio]`).prop("checked", true);
         checkedItems.prop("checked", false);
-        if (name == "characters") {
+        if (name === "characters") {
             $("#characters label.btn").removeClass("active");
         }
     } else {
@@ -433,11 +458,12 @@ function switchCardsVisualState(cardNames = []) {
     let cardPreviews;
 
     if (selectionMode) {
-        let notOwnedCards = $('.cardPreview:not(".placeholder")')
+        const notOwnedCards = $('.cardPreview:not(".placeholder")')
             .filter(function () {
-                return !cardNames.includes(
-                    $("img", this).attr("src").split("/")[4].split(".jpg")[0]
+                const cardName = getUniqueNameFromSrc(
+                    $("img", this).attr("src")
                 );
+                return !cardNames.includes(cardName);
             })
             .toArray();
         cardPreviews = notOwnedCards.reduce(splitCardsByVisibility, {
@@ -464,8 +490,8 @@ function cardClicked(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    let image = $(this).find("img");
-    let cardName = $("img", this).attr("src").split("/")[4].split(".jpg")[0];
+    const image = $(this).find("img");
+    const cardName = getUniqueNameFromSrc($("img", this).attr("src"));
 
     updateChangedCards([cardName], $(image).hasClass("notSelectedCard"));
     $(image).toggleClass("notSelectedCard");
@@ -474,24 +500,26 @@ function cardClicked(e) {
 }
 
 function switchSelectionAll(select) {
-    let cardsToSelect = getCardsToSelect(select);
-    if (cardsToSelect.length == 0) return;
+    const cardsToSelect = getCardsToSelect(select);
+    if (cardsToSelect.length === 0) return;
 
-    let visibleCards = $('.cardPreview:visible:not(".placeholder")')
+    const visibleCards = $('.cardPreview:visible:not(".placeholder")')
         .filter((idx, el) => $(el).isInViewport())
-        .filter((idx, el) =>
-            cardsToSelect.includes(
-                $(el).find("img").attr("src").split("/")[4].split(".jpg")[0]
-            )
-        );
+        .filter((idx, el) => {
+            const cardName = getUniqueNameFromSrc(
+                $(el).find("img").attr("src")
+            );
+            return cardsToSelect.includes(cardName);
+        });
 
-    let invisibleCards = $('.cardPreview:visible:not(".placeholder")')
+    const invisibleCards = $('.cardPreview:visible:not(".placeholder")')
         .filter((idx, el) => !$(el).isInViewport())
-        .filter((idx, el) =>
-            cardsToSelect.includes(
-                $(el).find("img").attr("src").split("/")[4].split(".jpg")[0]
-            )
-        );
+        .filter((idx, el) => {
+            const cardName = getUniqueNameFromSrc(
+                $(el).find("img").attr("src")
+            );
+            return cardsToSelect.includes(cardName);
+        });
 
     let changeSelection;
     if (select) {
@@ -519,7 +547,7 @@ function updateChangedCards(cards, selected) {
 }
 
 function getCardsToSelect(select) {
-    let demonTabSelected = $("#demon-tab").hasClass("active");
+    const demonTabSelected = $("#demon-tab").hasClass("active");
     let cardsToSelect = demonTabSelected ? cardList.demon : cardList.memory;
 
     if (select) {
