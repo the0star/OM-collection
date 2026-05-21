@@ -7,6 +7,7 @@
 var app = require("../app");
 var debug = require("debug")("om-collection:server");
 var http = require("http");
+const db = require("../config/db");
 
 /**
  * Get port from environment and store in Express.
@@ -22,12 +23,84 @@ app.set("port", port);
 var server = http.createServer(app);
 
 /**
- * Listen on provided port, on all network interfaces.
+ * Connect to database first, then start listening for requests.
  */
 
-server.listen(port);
-server.on("error", onError);
-server.on("listening", onListening);
+db.connect()
+    .then(() => {
+        server.listen(port);
+        server.on("error", onError);
+        server.on("listening", onListening);
+    })
+    .catch((err) => {
+        console.error(
+            "Failed to connect to database on startup. Exiting.",
+            err
+        );
+        process.exit(1);
+    });
+
+/**
+ * Graceful Shutdown Logic
+ * intercepting OS termination signals to clean up active resources safely.
+ */
+
+const SHUTDOWN_TIMEOUT_MS = 8000;
+
+async function handleGracefulShutdown(signal) {
+    console.log(
+        `\nReceived ${signal}. Starting production graceful shutdown sequence...`
+    );
+
+    // Safety timer: if shutdown takes too long, force exit before Cloud Run kills instance
+    const forceExitTimer = setTimeout(() => {
+        console.error("Shutdown timed out. Forcing exit.");
+        process.exit(1);
+    }, SHUTDOWN_TIMEOUT_MS);
+
+    // Prevent the timer itself from keeping the process alive
+    forceExitTimer.unref();
+
+    // 1. Tell the HTTP server to stop accepting new client connections,
+    //    and wait for any in-progress requests to finish
+    await new Promise((resolve) => {
+        server.close(() => {
+            console.log("HTTP server stopped accepting new requests.");
+            resolve();
+        });
+    });
+
+    // 2. Safely close down our MongoDB connection pool
+    try {
+        await db.disconnect();
+        console.log(
+            "Database connection pool safely drained. Exiting cleanly."
+        );
+        process.exit(0);
+    } catch (err) {
+        console.error(
+            "Critical error occurred while disconnecting database during shutdown:",
+            err
+        );
+        process.exit(1);
+    }
+}
+
+// Handle server-killing exceptions outside of Express routing execution loops
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+    console.error("Uncaught Exception thrown:", error);
+    process.exit(1);
+});
+
+// Intercept Ctrl+C (Local machine terminal exit)
+process.on("SIGINT", () => handleGracefulShutdown("SIGINT"));
+
+// Intercept Container/Process Manager termination (PM2, Docker, Cloud Run, etc.)
+process.on("SIGTERM", () => handleGracefulShutdown("SIGTERM"));
 
 /**
  * Normalize a port into a number, string, or false.

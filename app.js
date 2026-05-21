@@ -11,7 +11,6 @@ const helmet = require("helmet");
 const passport = require("passport");
 const compression = require("compression");
 const flash = require("connect-flash");
-const bodyParser = require("body-parser");
 
 const db = require("./config/db");
 const limiter = require("./config/redis-limiter");
@@ -31,15 +30,9 @@ const app = express();
 app.set("views", __dirname + "/views");
 app.set("view engine", "pug");
 
-db.connect()
-    .then(() => console.log("MongoDB connected"))
-    .catch((err) => {
-        console.error("MongoDB connection failed", err);
-    });
-
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cookieParser());
 app.use(compression());
 app.use(logger(process.env.NODE_ENV === "production" ? "combined" : "dev"));
@@ -91,11 +84,8 @@ Sentry.setupExpressErrorHandler(app);
 
 app.use(function (err, req, res, next) {
     let ignoredErrors = [401, 404];
-    if (!ignoredErrors.includes(err.status)) {
+    if (!ignoredErrors.includes(err.status || 500)) {
         console.error(err);
-        if (req.app.get("env") === "production") {
-            Sentry.captureException(err);
-        }
     }
 
     let errorTitle = err.title || "Something went wrong";
