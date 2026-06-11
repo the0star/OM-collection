@@ -103,15 +103,5 @@ dist
 # TernJS port file
 .tern-port
 
-# project specific files
-# public/images/bg/
-# public/images/cards/
-# public/images/events/
-public/images/
-
-# temp files
-temp/
-
-# temp folder for uploading images
-uploads/
 .vscode/
+.idea/
