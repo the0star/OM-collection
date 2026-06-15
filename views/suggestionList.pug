@@ -10,7 +10,7 @@ block content
 			p.m-0 I finally cleared all pending edits!!! Lots of thanks to everyone who made helpful edits (21 Oct, 2022). Next round of suggestions, bring it on :)
 			hr
 			ol
-				if user && user.type === "Admin"
+				if user && user.isAdmin
 					each suggestion in suggestions
 						li(style="line-height:2;")
 							| #{getDateFromObjectID(suggestion._id)}

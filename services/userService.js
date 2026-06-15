@@ -399,18 +399,30 @@ exports.updateSupport = async function (user, status) {
 
 // TODO combine with updateSupport
 exports.banUser = async function (name) {
-    let banResult = await Users.findOneAndUpdate(
-        { "info.name": name },
-        {
-            $push: {
-                "info.supportStatus": { name: "bannedFromMakingSuggestions" },
-            },
+    // findOneAndUpdate returns the matched doc (or null) — not a result
+    // object with `.ok`. The old check (`!banResult.ok`) was always
+    // truthy and made this function unreachable-on-success.
+    let banResult;
+    try {
+        banResult = await Users.findOneAndUpdate(
+            { "info.name": name },
+            {
+                $push: {
+                    "info.supportStatus": {
+                        name: "bannedFromMakingSuggestions",
+                    },
+                },
+            }
+        );
+        if (!banResult) {
+            return { err: true, message: "User not found." };
         }
-    );
-    let deleteSuggestionResult =
-        await suggestionService.refuseSuggestionsFrom(name);
-    if (!banResult.ok || !deleteSuggestionResult.ok) {
-        return { err: true, message: "Something went wrong!" };
+        // refuseAllPendingFrom now returns { refusedCount }; failure
+        // throws. We don't need the count for the success message but
+        // surface it for observability.
+        await suggestionService.refuseAllPendingFrom(name);
+    } catch (e) {
+        return { err: true, message: e.message || "Something went wrong!" };
     }
     return { err: false, message: "User banned" };
 };

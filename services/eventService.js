@@ -73,8 +73,22 @@ exports.updateEvent = async function (originalName, data, user) {
             });
         }
 
+        // PopQuiz events keep their type-specific fields (rewards, stages,
+        // boxes, boosting…) on a Mongoose discriminator schema, not the base
+        // Event schema. Updating through the base model silently strips those
+        // fields under strict mode, so the write succeeds but the real edits
+        // never persist (confirmed against production data: base-model update
+        // was a no-op on a PopQuiz event). Route the write through the
+        // discriminator model that matches this event's type; fall back to
+        // the base model for plain event types that have no discriminator.
+        const UpdateModel =
+            (event.type &&
+                Events.discriminators &&
+                Events.discriminators[event.type]) ||
+            Events;
+
         await Promise.all([
-            Events.findOneAndUpdate(
+            UpdateModel.findOneAndUpdate(
                 { "name.en": originalName },
                 { $set: updatedData }
             ),
@@ -88,13 +102,13 @@ exports.updateEvent = async function (originalName, data, user) {
         ]);
 
         return {
-            success: true,
+            err: null,
             message: "Event updated!",
         };
     } catch (error) {
         Sentry.captureException(error);
         return {
-            success: false,
+            err: true,
             message: error.message,
         };
     }

@@ -266,15 +266,37 @@ block content
 							|
 							a(href="/suggestion") pending edits' page
 							| .
-						h5 IMPORTANT:
-						p If you make a new edit on the same page, <u>it will overwrite your previous edit</u>! So, make sure submit all of your edits at once!
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 					</div>
 				</div>
 			</div>
 		</div>
+		//- Shown when the user submits an edit on a page where they already have a pending suggestion.
+		<div class="modal fade" id="duplicatePendingModal" tabindex="-1" aria-labelledby="duplicatePendingLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="duplicatePendingLabel">You already have a pending edit on this page</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					div.modal-body
+						p You submitted an edit on this page earlier and it hasn't been reviewed yet. What would you like to do?
+						ul
+							li <b>Keep existing</b> — discard your new changes and leave the pending edit as-is.
+							li <b>Replace with new edit</b> — overwrite the pending edit with what's in the form now.
+						p.text-muted Submitted: <span id="duplicatePendingTimestamp"></span>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal" id="duplicateKeep">Keep existing</button>
+						<button type="button" class="btn btn-primary" id="duplicateReplace">Replace with new edit</button>
+					</div>
+				</div>
+			</div>
+		</div>
 		script.
+			let pendingNewData = null;
 			function setCD(countdown) {
 				$("button#submit").prop("disabled", true);
 				let cd = setInterval(() => {
@@ -295,16 +317,39 @@ block content
 					return;
 				}
 				setCD(60);
-				$.post("/suggestion/add", {
-					originalData: originalData,
-					data: newData,
-					page: location.pathname.replace("/edit", '')
-				}, function(result) {
-						if (result.err) {
-							showAlert("danger", result.message);
-							return;
-						}
-						$("#suggestionModal").modal("show");
+				$.ajax({
+					url: "/suggestion/add",
+					method: "POST",
+					data: {
+						originalData: originalData,
+						data: newData,
+						page: location.pathname.replace("/edit", '')
 					}
-				);
+				}).done(function() {
+					$("#suggestionModal").modal("show");
+				}).fail(function(xhr) {
+					let result = xhr.responseJSON || {};
+					if (xhr.status === 409 && result.code === "DUPLICATE_PENDING") {
+						pendingNewData = newData;
+						let ts = (result.existing && result.existing.createdAt) || (result.existing && result.existing._id);
+						$("#duplicatePendingTimestamp").text(ts || "earlier");
+						$("#duplicatePendingModal").modal("show");
+						return;
+					}
+					showAlert("danger", result.message || "Failed to submit suggestion.");
+				});
 			}
+			$(document).on("click", "#duplicateReplace", function() {
+				if (!pendingNewData) return;
+				$("#duplicatePendingModal").modal("hide");
+				$.post("/suggestion/replace", {
+					page: location.pathname.replace("/edit", ''),
+					data: pendingNewData
+				}).done(function() {
+					pendingNewData = null;
+					$("#suggestionModal").modal("show");
+				}).fail(function(xhr) {
+					let r = xhr.responseJSON || {};
+					showAlert("danger", r.message || "Failed to replace suggestion.");
+				});
+			});

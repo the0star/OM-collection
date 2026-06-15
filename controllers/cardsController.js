@@ -461,7 +461,7 @@ exports.addNewCard = async function (req, res) {
 };
 
 exports.updateCard = async function (req, res) {
-    let verifyTree = await exports.isVerifiedTreeData(
+    let verifyTree = await cardService.isVerifiedTreeData(
         req.params.card,
         req.body.cardData
     );
@@ -650,45 +650,9 @@ function formatPipeline2(query) {
     return pipeline;
 }
 
-exports.isVerifiedTreeData = async function (name, data) {
-    try {
-        let card = await cardService.getCard({ uniqueName: name });
-
-        if (!card.dt || card.dt.length === 0) {
-            return { err: null };
-        }
-
-        for (const node of card.dt) {
-            if (node.reward === "???") {
-                continue;
-            }
-
-            // NOTE: newNode = same node reward in new data
-            let newNode = data.dt.find(
-                (element) =>
-                    element.reward === node.reward && element.type === node.type
-            );
-
-            if (!newNode) {
-                return { err: true, message: node.reward + " is removed." };
-            }
-
-            if (!newNode._id) {
-                newNode._id = node._id;
-            } else if (newNode._id && newNode._id != node._id) {
-                return {
-                    err: true,
-                    message: node.reward + " has mismatched id.",
-                };
-            }
-        }
-
-        return { err: null };
-    } catch (e) {
-        Sentry.captureException(e);
-        return { err: true, message: e.message };
-    }
-};
+// isVerifiedTreeData moved to services/cardService.js so non-controller
+// callers (e.g. suggestionService) can use it without controller-to-
+// controller coupling. Call cardService.isVerifiedTreeData(name, data).
 
 // TODO: use vue
 exports.getIconPage = async function (req, res, next) {

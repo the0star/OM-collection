@@ -9,6 +9,13 @@ router.post(
     loginController.canEdit(),
     suggestionController.addSuggestion
 );
+// Explicit "I know I have a pending suggestion on this page — replace it"
+// path. Triggered by the duplicate-detected modal in cardEdit/eventEdit.
+router.post(
+    "/replace",
+    loginController.canEdit(),
+    suggestionController.replaceSuggestion
+);
 router.post(
     "/refuse",
     loginController.hasAccess("Admin"),

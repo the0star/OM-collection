@@ -1,55 +1,138 @@
-const miscController = require("../controllers/miscController");
-const cardController = require("../controllers/cardsController");
-const suggestionService = require("../services/suggestionService");
-const cardService = require("../services/cardService");
-const eventService = require("../services/eventService");
+/**
+ * Thin HTTP handlers for the suggestion workflow.
+ *
+ * Pattern in this file:
+ *   1. express-validator chain validates the body.
+ *   2. Handler delegates to suggestionService.
+ *   3. SuggestionError -> a specific HTTP status; everything else -> next(e).
+ *
+ * Business logic (path parsing, JSON parsing, resource dispatch, validator
+ * dispatch, audit-trail writes) lives in suggestionService — not here.
+ */
+
+const { body, param, validationResult } = require("express-validator");
 const Sentry = require("@sentry/node");
 
-exports.getSuggestionPage = async function (req, res, next) {
-    try {
-        var suggestion = await suggestionService.getSuggestion({
-            _id: req.params.id,
-        });
-        var originalFile = await getOriginalFile(suggestion.page.split("/"));
-        return res.render("suggestionDetail", {
-            title: req.params.id,
-            originalFile: originalFile,
-            suggestion: suggestion,
-            user: req.user,
-        });
-    } catch (e) {
-        return next(e);
-    }
-};
+const miscController = require("./miscController");
+const cardService = require("../services/cardService");
+const eventService = require("../services/eventService");
+const suggestionService = require("../services/suggestionService");
+const { SuggestionError } = suggestionService;
 
-async function getOriginalFile(path) {
-    try {
-        let db = path[path.length - 2],
-            docName = decodeURIComponent(path[path.length - 1]);
-        if (db === "card") {
-            return await cardService.getCard({ uniqueName: docName });
-        } else if (db === "event") {
-            return await eventService.getEvent({
-                "name.en": docName.replace(/_/g, " "),
-            });
-        } else {
-            return { error: "Something went wrong." };
+// -- helpers -------------------------------------------------------------
+
+/**
+ * Convert a SuggestionError into a JSON response, falling back to next(e)
+ * for unexpected errors so the central error handler can log them.
+ */
+function handleServiceError(e, _req, res, next) {
+    if (e instanceof SuggestionError) {
+        switch (e.code) {
+            case SuggestionError.codes.NOT_FOUND:
+                return res
+                    .status(404)
+                    .json({ ok: false, code: e.code, message: e.message });
+            case SuggestionError.codes.DUPLICATE_PENDING:
+                return res.status(409).json({
+                    ok: false,
+                    code: e.code,
+                    message: e.message,
+                    existing: e.existing,
+                });
+            case SuggestionError.codes.INVALID_PAYLOAD:
+            case SuggestionError.codes.INVALID_RESOURCE:
+                return res
+                    .status(400)
+                    .json({ ok: false, code: e.code, message: e.message });
+            case SuggestionError.codes.UPDATE_FAILED:
+                return res
+                    .status(422)
+                    .json({ ok: false, code: e.code, message: e.message });
         }
+    }
+    Sentry.captureException(e);
+    return next(e);
+}
+
+/**
+ * Escape backticks in interpolated user-controlled strings so that a
+ * username or page containing a backtick can't break Discord markdown
+ * formatting in the admin notification.
+ */
+function discordSafe(s) {
+    return String(s).replace(/`/g, "ʼ");
+}
+
+/**
+ * Look up the original card or event for the suggestion-detail page so
+ * the diff viewer has a "before" file to render. Returns null on miss
+ * (the view's existing template handles a null/undefined origin
+ * gracefully because the diff is only rendered from the textarea values).
+ */
+async function loadOriginalResource(suggestion) {
+    try {
+        if (suggestion.resource === "card") {
+            return await cardService.getCard({
+                uniqueName: suggestion.identifier,
+            });
+        }
+        if (suggestion.resource === "event") {
+            // identifier is already the real name.en (parsePage converts
+            // the URL's underscores to spaces for events).
+            return await eventService.getEvent({
+                "name.en": suggestion.identifier,
+            });
+        }
+        return null;
     } catch (e) {
-        return { error: e.message };
+        Sentry.captureException(e);
+        return null;
     }
 }
 
+// -- handlers ------------------------------------------------------------
+
+exports.getSuggestionPage = [
+    param("id").isMongoId().withMessage("Invalid suggestion id"),
+    async function (req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return next({ status: 404, message: "Suggestion not found" });
+        }
+        try {
+            const suggestion = await suggestionService.getSuggestionById(
+                req.params.id
+            );
+            const originalFile = await loadOriginalResource(suggestion);
+            return res.render("suggestionDetail", {
+                title: req.params.id,
+                originalFile: originalFile,
+                suggestion: suggestion,
+                user: req.user,
+            });
+        } catch (e) {
+            if (e instanceof SuggestionError && e.code === "NOT_FOUND") {
+                return next({ status: 404, message: "Suggestion not found" });
+            }
+            return next(e);
+        }
+    },
+];
+
 exports.getSuggestionList = async function (req, res, next) {
     try {
-        let sort = {};
-        if (req.user && req.user.isAdmin && req.query.q === "s") {
-            sort = { page: 1, _id: 1 };
-        }
-        let suggestions = await suggestionService.getSuggestionList(
-            { status: "pending" },
-            sort
-        );
+        // Admins can opt into a "group by page" view with ?sort=page.
+        // The previous ?q=s magic string is still accepted for backwards
+        // compatibility with any old bookmarks.
+        const wantsPageSort =
+            req.user &&
+            req.user.isAdmin &&
+            (req.query.sort === "page" || req.query.q === "s");
+        const sort = wantsPageSort ? { page: 1, _id: 1 } : {};
+
+        const suggestions = await suggestionService.listPendingSuggestions({
+            sort,
+        });
         return res.render("suggestionList", {
             title: "Suggestions",
             suggestions: suggestions,
@@ -60,96 +143,137 @@ exports.getSuggestionList = async function (req, res, next) {
     }
 };
 
-exports.addSuggestion = async function (req, res) {
-    let result = await suggestionService.addSuggestion({
-        user: req.user.name,
-        page: req.body.page,
-        stringifiedJSON: req.body.data,
-    });
+const submitValidators = [
+    body("page")
+        .isString()
+        .matches(/^\/(card|event)\/.+/)
+        .withMessage("Invalid suggestion page"),
+    body("data").isString().notEmpty().withMessage("Missing edit data"),
+];
 
-    if (!result.err) {
-        miscController.notifyAdmin(
-            `New suggestion from \`\`${req.user.name}\`\` on \`\`${req.body.page}\`\`.`
-        );
-    }
-
-    return res.json(result);
-};
-
-// NOTE: card search use uniqueName, event search use name.en
-exports.approveSuggestion = async (req, res) => {
-    try {
-        const suggestion = await suggestionService.getSuggestion({
-            _id: req.body._id,
-        });
-        if (!suggestion) {
-            return res.json({ err: true, message: "Suggestion not found" });
+exports.addSuggestion = [
+    ...submitValidators,
+    async function (req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                ok: false,
+                err: true, // legacy field — old client checks `result.err`
+                code: "INVALID_PAYLOAD",
+                message: errors.array()[0].msg,
+            });
         }
-
-        console.log(suggestion);
-
-        const [, db, encodedDocName] = suggestion.page.split("/");
-        const docName = decodeURIComponent(encodedDocName);
-        const data = JSON.parse(req.body.data);
-
-        let updateResult;
-        switch (db) {
-            case "card":
-                const verifyTree = await cardController.isVerifiedTreeData(
-                    docName,
-                    data
-                );
-                if (verifyTree.err) {
-                    return res.json({ err: true, message: verifyTree.message });
-                }
-
-                updateResult = await cardService.updateCard({
-                    user: suggestion.user,
-                    originalUniqueName: docName,
-                    cardData: data,
-                });
-                break;
-
-            case "event":
-                updateResult = await eventService.updateEvent(
-                    docName.replace(/_/g, " "),
-                    data,
-                    suggestion.user
-                );
-                break;
-
-            default:
-                return res.json({
-                    err: true,
-                    message: "Invalid suggestion path",
-                });
+        try {
+            const created = await suggestionService.createSuggestion({
+                user: req.user.name,
+                page: req.body.page,
+                data: req.body.data,
+            });
+            miscController.notifyAdmin(
+                `New suggestion from \`\`${discordSafe(req.user.name)}\`\` on ` +
+                    `\`\`${discordSafe(req.body.page)}\`\`.`
+            );
+            // Legacy success shape: clients check `!result.err`.
+            return res.json({
+                ok: true,
+                err: null,
+                message: "Suggestion submitted!",
+                suggestion: created,
+            });
+        } catch (e) {
+            return handleServiceError(e, req, res, next);
         }
+    },
+];
 
-        if (updateResult?.err) {
-            throw new Error(updateResult.message);
+exports.replaceSuggestion = [
+    ...submitValidators,
+    async function (req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                ok: false,
+                err: true,
+                code: "INVALID_PAYLOAD",
+                message: errors.array()[0].msg,
+            });
         }
+        try {
+            const saved = await suggestionService.replacePendingSuggestion({
+                user: req.user.name,
+                page: req.body.page,
+                data: req.body.data,
+            });
+            return res.json({
+                ok: true,
+                err: null,
+                message: "Existing suggestion replaced.",
+                suggestion: saved,
+            });
+        } catch (e) {
+            return handleServiceError(e, req, res, next);
+        }
+    },
+];
 
-        const statusResult = await suggestionService.updateSuggestionStatus(
-            req.body._id,
-            "approved",
-            req.body.reason
-        );
+exports.approveSuggestion = [
+    body("_id").isMongoId().withMessage("Invalid suggestion id"),
+    body("data").isString().notEmpty().withMessage("Missing edit data"),
+    body("reason").optional({ checkFalsy: true }).isString(),
+    async function (req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                ok: false,
+                err: true,
+                code: "INVALID_PAYLOAD",
+                message: errors.array()[0].msg,
+            });
+        }
+        try {
+            const result = await suggestionService.approveSuggestion({
+                id: req.body._id,
+                editedData: req.body.data,
+                reason: req.body.reason,
+                approver: req.user && req.user.name,
+            });
+            return res.json({
+                ok: true,
+                err: null,
+                message: result.message,
+            });
+        } catch (e) {
+            return handleServiceError(e, req, res, next);
+        }
+    },
+];
 
-        return res.json(statusResult);
-    } catch (error) {
-        return res.json({
-            err: true,
-            message: error.message,
-        });
-    }
-};
-
-exports.refuseSuggestion = async function (req, res) {
-    return res.json(
-        await suggestionService.updateSuggestionStatus(
-            req.body._id,
-            "refused",
-            req.body.reason
-        )
-    );
-};
+exports.refuseSuggestion = [
+    body("_id").isMongoId().withMessage("Invalid suggestion id"),
+    body("reason").optional({ checkFalsy: true }).isString(),
+    async function (req, res, next) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                ok: false,
+                err: true,
+                code: "INVALID_PAYLOAD",
+                message: errors.array()[0].msg,
+            });
+        }
+        try {
+            const result = await suggestionService.refuseSuggestion({
+                id: req.body._id,
+                reason: req.body.reason,
+                refuser: req.user && req.user.name,
+            });
+            return res.json({
+                ok: true,
+                err: null,
+                message: result.message,
+            });
+        } catch (e) {
+            return handleServiceError(e, req, res, next);
+        }
+    },
+];

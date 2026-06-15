@@ -17,8 +17,11 @@ block scripts
     const PATH = !{JSON.stringify(suggestion.page.split('/'))};
 
 block content
-  - newFile = JSON.parse(suggestion.stringifiedJSON);
-  if suggestion.page.split('/')[1] == "card"
+  //- `suggestion.data` is the parsed object from the new schema. Old
+  //- (un-migrated) records may still have a legacy stringifiedJSON
+  //- string; fall back to parsing that for safety.
+  - newFile = (suggestion.data != null) ? suggestion.data : JSON.parse(suggestion.stringifiedJSON || "{}");
+  if suggestion.resource === "card" || suggestion.page.split('/')[1] === "card"
     -
       function sortByGrimm(dt) {
         return dt.sort((a, b) => {
@@ -70,8 +73,10 @@ block content
         div.row
           div.col
             button#ban.btn.btn-outline-danger.mr-2(data-name=suggestion.user) Ban user
-            button#delete.btn.btn-secondary.mr-2 Delete suggestion
-            button#save.btn.btn-primary Save changes
+            //- Renamed from "Delete suggestion": this action marks the
+            //- suggestion refused — it does not remove the record.
+            button#refuse.btn.btn-secondary.mr-2 Refuse suggestion
+            button#save.btn.btn-primary Approve & save
           div.col: input#reason.form-control(type="text" value=suggestion.reason placeholder="reason")
 
   script(src="/dist/js/jdd/jsl/jsl.format.js")

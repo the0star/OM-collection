@@ -8,6 +8,9 @@ block content
         div.col-12
           p Total edits: #{count}
           h5 Edits under review
+          //- userController passes all of this user's suggestions
+          //- (across all statuses); filter to pending here for display.
+          //- The total count above intentionally includes refused/approved.
           if suggestions.length > 0
             ol
               each i in suggestions

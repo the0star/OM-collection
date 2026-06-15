@@ -395,6 +395,58 @@ exports.findSkills = async function (keyword, user, owned) {
     return await Cards.aggregate(pipeline);
 };
 
+/**
+ * Verify that a candidate card payload preserves the existing reward-tree
+ * ("dt") structure: every node from the saved card must reappear in the
+ * incoming data with a matching _id (the suggester is allowed to leave
+ * _id blank, in which case we copy it forward).
+ *
+ * Returns { err: null } on success or { err: true, message } on a
+ * structural mismatch. Mutates `data.dt` in place to fill in missing _ids.
+ *
+ * Lives here (not in cardsController) so that any layer can call it
+ * without controllers depending on other controllers.
+ */
+exports.isVerifiedTreeData = async function (name, data) {
+    try {
+        let card = await exports.getCard({ uniqueName: name });
+
+        if (!card || !card.dt || card.dt.length === 0) {
+            return { err: null };
+        }
+
+        for (const node of card.dt) {
+            if (node.reward === "???") {
+                continue;
+            }
+
+            // newNode = same node reward in new data
+            let newNode = data.dt.find(
+                (element) =>
+                    element.reward === node.reward && element.type === node.type
+            );
+
+            if (!newNode) {
+                return { err: true, message: node.reward + " is removed." };
+            }
+
+            if (!newNode._id) {
+                newNode._id = node._id;
+            } else if (newNode._id && newNode._id != node._id) {
+                return {
+                    err: true,
+                    message: node.reward + " has mismatched id.",
+                };
+            }
+        }
+
+        return { err: null };
+    } catch (e) {
+        Sentry.captureException(e);
+        return { err: true, message: e.message };
+    }
+};
+
 exports.updateCard = async function (data) {
     var originalUniqueName = data.originalUniqueName;
     var newUniqueName = data.cardData.uniqueName;
